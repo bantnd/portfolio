@@ -1,0 +1,184 @@
+---
+// Matrix Theme - Green falling code
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>⚡ Matrix</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: "Inter", system-ui, sans-serif;
+                background: #0a0a0a;
+                min-height: 100vh;
+                overflow: hidden;
+            }
+            canvas {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+            }
+            .content {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                pointer-events: none;
+            }
+            .title {
+                font-size: clamp(2.5rem, 8vw, 5rem);
+                font-weight: 700;
+                font-family: "Courier New", monospace;
+                color: #22c55e;
+                text-shadow:
+                    0 0 20px rgba(34, 197, 94, 0.5),
+                    0 0 40px rgba(34, 197, 94, 0.3);
+                animation: glitch 3s ease-in-out infinite;
+            }
+            .subtitle {
+                font-size: 1.25rem;
+                color: rgba(34, 197, 94, 0.6);
+                margin-top: 0.5rem;
+                font-family: "Courier New", monospace;
+            }
+            .nav {
+                position: fixed;
+                bottom: 2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+                z-index: 20;
+            }
+            .nav a {
+                padding: 0.5rem 1rem;
+                border: 1px solid rgba(34, 197, 94, 0.3);
+                background: rgba(34, 197, 94, 0.1);
+                color: #22c55e;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                text-decoration: none;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s;
+                font-family: "Courier New", monospace;
+            }
+            .nav a:hover {
+                background: rgba(34, 197, 94, 0.2);
+            }
+            .nav a.active {
+                background: rgba(34, 197, 94, 0.3);
+                border-color: rgba(34, 197, 94, 0.6);
+            }
+            @keyframes glitch {
+                0%,
+                90%,
+                100% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                92% {
+                    transform: translateX(-2px);
+                    opacity: 0.8;
+                }
+                94% {
+                    transform: translateX(2px);
+                    opacity: 0.9;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <div class="content">
+            <h1 class="title">⚡ MATRIX</h1>
+            <p class="subtitle">Wake up, Neo...</p>
+        </div>
+        <nav class="nav">
+            <a href="/stars">✨ Stars</a>
+            <a href="/stars/fireflies">🔥 Fireflies</a>
+            <a href="/stars/galaxy">🌌 Galaxy</a>
+            <a href="/stars/matrix" class="active">⚡ Matrix</a>
+            <a href="/stars/fireworks">🎆 Fireworks</a>
+            <a href="/stars/blackhole">🕳️ Black Hole</a>
+            <a href="/">← Home</a>
+        </nav>
+
+        <script>
+            const canvas = document.getElementById(
+                "canvas",
+            ) as HTMLCanvasElement;
+            const ctx = canvas.getContext("2d")!;
+            let width = (canvas.width = window.innerWidth);
+            let height = (canvas.height = window.innerHeight);
+
+            const chars =
+                "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
+            const fontSize = 14;
+            const columns = Math.floor(width / fontSize);
+            const drops: number[] = [];
+
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -100;
+            }
+
+            function draw() {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.font = `${fontSize}px monospace`;
+
+                for (let i = 0; i < drops.length; i++) {
+                    const char =
+                        chars[Math.floor(Math.random() * chars.length)];
+                    const x = i * fontSize;
+                    const y = drops[i] * fontSize;
+
+                    // Gradient from bright to dim
+                    const brightness = Math.random();
+                    if (brightness > 0.98) {
+                        ctx.fillStyle = "#ffffff";
+                    } else if (brightness > 0.9) {
+                        ctx.fillStyle = "#4ade80";
+                    } else {
+                        ctx.fillStyle = `rgba(34, 197, 94, ${0.5 + brightness * 0.5})`;
+                    }
+
+                    ctx.fillText(char, x, y);
+
+                    // Reset when off screen
+                    if (y > height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            function animate() {
+                draw();
+                setTimeout(() => requestAnimationFrame(animate), 33); // ~30fps for that retro feel
+            }
+
+            window.addEventListener("resize", () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            animate();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,324 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { ArrowLeft, Shield, Lock, Globe, AlertTriangle } from "lucide-react";
+
+const title = "Security Operations Center";
+const description = "Real-time Zero-Trust Security Monitoring";
+---
+
+<Layout title={title} description={description}>
+    <section class="container mx-auto max-w-6xl px-4 py-12">
+        <!-- Header -->
+        <div class="mb-12">
+            <div class="mb-6 flex items-center gap-2 text-sm text-red-400">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"
+                    ></span>
+                    <span
+                        class="relative inline-flex h-2 w-2 rounded-full bg-red-400"
+                    ></span>
+                </span>
+                Live Threat Intelligence
+            </div>
+            <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
+                Zero-Trust <span class="text-accent">SOC</span> Dashboard
+            </h1>
+            <p class="text-muted max-w-2xl text-lg">
+                Real-time monitoring of identity verification, WAF threat
+                blocking, and secrets access auditing.
+            </p>
+        </div>
+
+        <!-- Threat Status Banner -->
+        <div class="mb-8 grid gap-4 md:grid-cols-4">
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-lg bg-red-500/10 p-2 text-red-400">
+                        <Shield size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            Threats Blocked (24h)
+                        </p>
+                        <p
+                            class="text-xl font-bold text-red-400"
+                            id="threatsBlocked"
+                        >
+                            8,492
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-lg bg-green-500/10 p-2 text-green-400">
+                        <Lock size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            Active Sessions
+                        </p>
+                        <p
+                            class="text-xl font-bold text-white"
+                            id="activeSessions"
+                        >
+                            142
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-lg bg-blue-500/10 p-2 text-blue-400">
+                        <Globe size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            WAF Status
+                        </p>
+                        <p class="text-xl font-bold text-blue-400">Active</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="rounded-lg bg-yellow-500/10 p-2 text-yellow-400"
+                    >
+                        <AlertTriangle size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            Threat Level
+                        </p>
+                        <p class="text-xl font-bold text-yellow-400">
+                            Elevated
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-8 lg:grid-cols-2">
+            <!-- Live Threat Monitor -->
+            <div
+                class="glass-effect flex h-[500px] flex-col rounded-xl border border-white/10 p-6"
+            >
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="flex items-center gap-2 text-xl font-semibold">
+                        <Shield size="1.25rem" className="text-red-400" />
+                        WAF Threat Log
+                    </h2>
+                    <span
+                        class="rounded bg-red-500/10 px-2 py-1 font-mono text-xs text-red-400"
+                        >LIVE</span
+                    >
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div
+                        class="h-full space-y-3 overflow-y-auto pr-2"
+                        id="threatLog"
+                    >
+                        <!-- Logs injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity & Access Stream -->
+            <div
+                class="glass-effect flex h-[500px] flex-col rounded-xl border border-white/10 p-6"
+            >
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="flex items-center gap-2 text-xl font-semibold">
+                        <Lock size="1.25rem" className="text-green-400" />
+                        Identity & Access
+                    </h2>
+                    <span
+                        class="rounded bg-green-500/10 px-2 py-1 font-mono text-xs text-green-400"
+                        >AUDIT</span
+                    >
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div
+                        class="h-full space-y-3 overflow-y-auto pr-2"
+                        id="accessLog"
+                    >
+                        <!-- Logs injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Navigation -->
+        <div class="mt-12">
+            <a
+                href="/projects"
+                class="text-accent inline-flex items-center gap-2 hover:underline"
+            >
+                <ArrowLeft size="1rem" />
+                Back to Projects
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // Simulation Data
+        const THREAT_TYPES = [
+            "SQL Injection Attempt",
+            "XSS Payload Detected",
+            "Path Traversal Blocked",
+            "Bad Bot User-Agent",
+            "Rate Limit Exceeded",
+            "Malicious IP Blocked",
+        ];
+
+        const LOCATIONS = ["US", "CN", "RU", "BR", "DE", "IN", "FR"];
+
+        const USERS = [
+            "alice.dev",
+            "bob.ops",
+            "carol.admin",
+            "dave.sec",
+            "svc-payment",
+            "svc-inventory",
+        ];
+        const ACTIONS = [
+            { msg: "MFA Verification Success", type: "success" },
+            { msg: "Retrieved secret 'db-prod-creds'", type: "info" },
+            { msg: "Login Failed (Invalid Password)", type: "error" },
+            { msg: "API Token Refreshed", type: "success" },
+            { msg: "Sudo Access Granted", type: "warning" },
+        ];
+
+        function getRandomIP() {
+            return Array.from({ length: 4 }, () =>
+                Math.floor(Math.random() * 256),
+            ).join(".");
+        }
+
+        function createThreatEntry() {
+            const threat =
+                THREAT_TYPES[Math.floor(Math.random() * THREAT_TYPES.length)];
+            const ip = getRandomIP();
+            const country =
+                LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+
+            const div = document.createElement("div");
+            div.className =
+                "flex items-start gap-3 rounded border border-red-500/10 bg-red-500/5 p-3 text-sm animate-in fade-in slide-in-from-top-2 duration-300";
+            div.innerHTML = `
+        <div class="mt-0.5 text-red-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <span class="font-semibold text-red-200">${threat}</span>
+            <span class="text-xs text-muted font-mono">${new Date().toLocaleTimeString()}</span>
+          </div>
+          <div class="mt-1 flex items-center gap-2 text-xs text-muted">
+            <span class="font-mono">${ip}</span>
+            <span class="rounded bg-white/5 px-1.5 py-0.5">${country}</span>
+          </div>
+        </div>
+      `;
+            return div;
+        }
+
+        function createAccessEntry() {
+            const user = USERS[Math.floor(Math.random() * USERS.length)];
+            const action = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+
+            let colorClass = "text-white";
+            let bgClass = "bg-white/5 border-white/10";
+            let icon =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h10"/><path d="M9 4v16"/><path d="M3 7l9-4 9 4v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>'; // Info default
+
+            if (action.type === "success") {
+                colorClass = "text-green-400";
+                bgClass = "bg-green-500/5 border-green-500/10";
+                icon =
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+            } else if (action.type === "error") {
+                colorClass = "text-red-400";
+                bgClass = "bg-red-500/5 border-red-500/10";
+                icon =
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+            } else if (action.type === "warning") {
+                colorClass = "text-yellow-400";
+                bgClass = "bg-yellow-500/5 border-yellow-500/10";
+                icon =
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+            }
+
+            const div = document.createElement("div");
+            div.className = `flex items-start gap-3 rounded border ${bgClass} p-3 text-sm animate-in fade-in slide-in-from-top-2 duration-300`;
+            div.innerHTML = `
+        <div class="mt-0.5 ${colorClass}">
+          ${icon}
+        </div>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <span class="font-semibold text-white">${user}</span>
+            <span class="text-xs text-muted font-mono">${new Date().toLocaleTimeString()}</span>
+          </div>
+          <p class="mt-1 text-xs ${colorClass}">${action.msg}</p>
+        </div>
+      `;
+            return div;
+        }
+
+        function addLog(containerId: string, element: HTMLElement) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.insertBefore(element, container.firstChild);
+
+            // Keep only last 20 items
+            if (container.children.length > 20) {
+                container.removeChild(container.lastChild!);
+            }
+        }
+
+        // Initial population
+        for (let i = 0; i < 5; i++) {
+            addLog("threatLog", createThreatEntry());
+            addLog("accessLog", createAccessEntry());
+        }
+
+        // Simulation Loop
+        setInterval(() => {
+            if (Math.random() > 0.3) {
+                // 70% chance to add threat
+                addLog("threatLog", createThreatEntry());
+
+                // Update counter
+                const counter = document.getElementById("threatsBlocked");
+                if (counter) {
+                    const current = parseInt(
+                        counter.innerText.replace(/,/g, ""),
+                    );
+                    counter.innerText = (current + 1).toLocaleString();
+                }
+            }
+        }, 2000);
+
+        setInterval(() => {
+            if (Math.random() > 0.2) {
+                // 80% chance to add access log
+                addLog("accessLog", createAccessEntry());
+            }
+        }, 1500);
+    </script>
+</Layout>

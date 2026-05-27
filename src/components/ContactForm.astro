@@ -1,0 +1,216 @@
+---
+/**
+ * Shared contact form component with submission to /api/contact.
+ * Used by both the index page contact section and the standalone /contact page.
+ */
+interface Props {
+  /** Additional CSS classes for the <form> element */
+  formClass?: string;
+  /** CSS classes for the input fields */
+  inputClass?: string;
+  /** CSS classes for the textarea */
+  textareaClass?: string;
+  /** CSS classes for the submit button */
+  buttonClass?: string;
+  /** Text for the submit button */
+  buttonText?: string;
+  /** Whether to show labels above inputs */
+  showLabels?: boolean;
+}
+
+const {
+  formClass = "space-y-6",
+  inputClass = "input input-bordered bg-base-200/30 focus:bg-base-200 focus:border-accent w-full transition-all",
+  textareaClass = "textarea textarea-bordered bg-base-200/30 focus:bg-base-200 focus:border-accent w-full resize-none transition-all",
+  buttonClass = "btn btn-accent shadow-accent/20 hover:shadow-accent/40 w-full text-white shadow-lg transition-all hover:scale-[1.02]",
+  buttonText = "Send Message",
+  showLabels = true,
+} = Astro.props;
+
+// Generate unique IDs to avoid collisions when multiple forms exist on different pages
+const uid = Math.random().toString(36).slice(2, 8);
+const formId = `contactForm-${uid}`;
+const nameId = `name-${uid}`;
+const emailId = `email-${uid}`;
+const messageId = `message-${uid}`;
+const submitBtnId = `submitBtn-${uid}`;
+const formMessageId = `formMessage-${uid}`;
+const successModalId = `successModal-${uid}`;
+const modalContentId = `modalContent-${uid}`;
+const closeModalBtnId = `closeModalBtn-${uid}`;
+---
+
+<form id={formId} class={formClass} data-contact-form>
+  <div class={showLabels ? "form-control" : ""}>
+    {showLabels && (
+      <label class="label" for={nameId}>
+        <span class="label-text font-medium">Name</span>
+      </label>
+    )}
+    <input
+      type="text"
+      name="name"
+      id={nameId}
+      placeholder={showLabels ? "Enter your name" : "Name"}
+      required
+      class={inputClass}
+    />
+  </div>
+
+  <div class={showLabels ? "form-control" : ""}>
+    {showLabels && (
+      <label class="label" for={emailId}>
+        <span class="label-text font-medium">Email</span>
+      </label>
+    )}
+    <input
+      type="email"
+      name="email"
+      id={emailId}
+      placeholder={showLabels ? "Your email address" : "Email"}
+      required
+      class={inputClass}
+    />
+  </div>
+
+  <div class={showLabels ? "form-control" : ""}>
+    {showLabels && (
+      <label class="label" for={messageId}>
+        <span class="label-text font-medium">Message</span>
+      </label>
+    )}
+    <textarea
+      name="message"
+      id={messageId}
+      placeholder={showLabels ? "Share your message here" : "Message"}
+      rows="5"
+      required
+      class={textareaClass}
+    ></textarea>
+  </div>
+
+  <div id={formMessageId} class="hidden rounded-lg p-4 text-sm"></div>
+
+  <button
+    type="submit"
+    id={submitBtnId}
+    class={buttonClass}
+  >
+    {buttonText}
+  </button>
+</form>
+
+<!-- Success Modal -->
+<div
+  id={successModalId}
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+>
+  <div
+    class="bg-base-100/90 w-full max-w-md scale-95 transform rounded-2xl border border-white/10 p-8 opacity-0 shadow-2xl transition-all duration-300"
+    id={modalContentId}
+  >
+    <div class="mb-6 flex justify-center">
+      <div
+        class="bg-success/10 flex h-20 w-20 items-center justify-center rounded-full"
+      >
+        <svg
+          class="text-success h-10 w-10"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+    </div>
+    <h3 class="mb-2 text-center text-2xl font-bold">Message Sent!</h3>
+    <p class="text-muted text-center">
+      Thanks for reaching out. I'll get back to you as soon as possible.
+    </p>
+    <button class="btn btn-ghost mt-8 w-full" id={closeModalBtnId}
+      >Close</button
+    >
+  </div>
+</div>
+
+<script>
+  // Initialize all contact forms on the page
+  document.querySelectorAll<HTMLFormElement>('[data-contact-form]').forEach((form) => {
+    const uid = form.id.split('-').pop()!;
+    const submitBtn = document.getElementById(`submitBtn-${uid}`) as HTMLButtonElement;
+    const formMessage = document.getElementById(`formMessage-${uid}`) as HTMLDivElement;
+    const successModal = document.getElementById(`successModal-${uid}`) as HTMLDivElement;
+    const modalContent = document.getElementById(`modalContent-${uid}`) as HTMLDivElement;
+    const closeModalBtn = document.getElementById(`closeModalBtn-${uid}`) as HTMLButtonElement;
+    const nameInput = document.getElementById(`name-${uid}`) as HTMLInputElement;
+    const emailInput = document.getElementById(`email-${uid}`) as HTMLInputElement;
+    const messageInput = document.getElementById(`message-${uid}`) as HTMLTextAreaElement;
+
+    function showModal() {
+      successModal.classList.remove("hidden");
+      successModal.classList.add("flex");
+      setTimeout(() => {
+        modalContent.classList.remove("scale-95", "opacity-0");
+        modalContent.classList.add("scale-100", "opacity-100");
+      }, 10);
+    }
+
+    function hideModal() {
+      modalContent.classList.remove("scale-100", "opacity-100");
+      modalContent.classList.add("scale-95", "opacity-0");
+      setTimeout(() => {
+        successModal.classList.add("hidden");
+        successModal.classList.remove("flex");
+      }, 300);
+    }
+
+    closeModalBtn?.addEventListener("click", hideModal);
+    successModal?.addEventListener("click", (e) => {
+      if (e.target === successModal) hideModal();
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      submitBtn.disabled = true;
+      const originalBtnText = submitBtn.textContent;
+      submitBtn.textContent = "Sending...";
+      formMessage.classList.add("hidden");
+
+      const name = nameInput.value;
+      const email = emailInput.value;
+      const message = messageInput.value;
+
+      try {
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, message }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to send message");
+        }
+
+        showModal();
+        form.reset();
+      } catch (error) {
+        console.error("Form submission error:", error);
+        formMessage.className = "rounded-lg bg-error/20 p-4 text-error";
+        formMessage.textContent =
+          error instanceof Error
+            ? error.message
+            : "Sorry, something went wrong. Please try again later.";
+        formMessage.classList.remove("hidden");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+      }
+    });
+  });
+</script>

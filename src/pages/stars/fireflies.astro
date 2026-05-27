@@ -1,0 +1,226 @@
+---
+// Fireflies Theme - Warm organic movement
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>🔥 Fireflies</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: "Inter", system-ui, sans-serif;
+                background: linear-gradient(
+                    180deg,
+                    #0a0f0a 0%,
+                    #1a2f1a 50%,
+                    #0a0f0a 100%
+                );
+                min-height: 100vh;
+                overflow: hidden;
+                cursor: crosshair;
+            }
+            canvas {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+            }
+            .content {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                pointer-events: none;
+            }
+            .title {
+                font-size: clamp(2.5rem, 8vw, 5rem);
+                font-weight: 700;
+                background: linear-gradient(
+                    135deg,
+                    #fef3c7 0%,
+                    #f59e0b 50%,
+                    #ea580c 100%
+                );
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: float 4s ease-in-out infinite;
+            }
+            .subtitle {
+                font-size: 1.25rem;
+                color: rgba(254, 243, 199, 0.6);
+                margin-top: 0.5rem;
+            }
+            .nav {
+                position: fixed;
+                bottom: 2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+                z-index: 20;
+            }
+            .nav a {
+                padding: 0.5rem 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                text-decoration: none;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s;
+            }
+            .nav a:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+            .nav a.active {
+                background: rgba(245, 158, 11, 0.3);
+                border-color: rgba(245, 158, 11, 0.6);
+            }
+            @keyframes float {
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-10px);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <div class="content">
+            <h1 class="title">🔥 Fireflies</h1>
+            <p class="subtitle">A warm summer night</p>
+        </div>
+        <nav class="nav">
+            <a href="/stars">✨ Stars</a>
+            <a href="/stars/fireflies" class="active">🔥 Fireflies</a>
+            <a href="/stars/galaxy">🌌 Galaxy</a>
+            <a href="/stars/matrix">⚡ Matrix</a>
+            <a href="/stars/fireworks">🎆 Fireworks</a>
+            <a href="/stars/blackhole">🕳️ Black Hole</a>
+            <a href="/">← Home</a>
+        </nav>
+
+        <script>
+            const canvas = document.getElementById(
+                "canvas",
+            ) as HTMLCanvasElement;
+            const ctx = canvas.getContext("2d")!;
+            let width = (canvas.width = window.innerWidth);
+            let height = (canvas.height = window.innerHeight);
+
+            class Firefly {
+                x: number;
+                y: number;
+                vx: number;
+                vy: number;
+                phase: number;
+                glowSize: number;
+                baseGlow: number;
+
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.baseGlow = Math.random() * 8 + 4;
+                    this.glowSize = this.baseGlow;
+                }
+
+                update() {
+                    // Organic wandering motion
+                    this.vx += (Math.random() - 0.5) * 0.02;
+                    this.vy += (Math.random() - 0.5) * 0.02;
+                    this.vx = Math.max(-1, Math.min(1, this.vx)) * 0.99;
+                    this.vy = Math.max(-1, Math.min(1, this.vy)) * 0.99;
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.phase += 0.03;
+
+                    // Pulsing glow
+                    this.glowSize =
+                        this.baseGlow +
+                        Math.sin(this.phase) * this.baseGlow * 0.5;
+
+                    // Wrap edges
+                    if (this.x < 0) this.x = width;
+                    if (this.x > width) this.x = 0;
+                    if (this.y < 0) this.y = height;
+                    if (this.y > height) this.y = 0;
+                }
+
+                draw() {
+                    const brightness = 0.5 + Math.sin(this.phase) * 0.5;
+
+                    // Outer glow
+                    const gradient = ctx.createRadialGradient(
+                        this.x,
+                        this.y,
+                        0,
+                        this.x,
+                        this.y,
+                        this.glowSize * 3,
+                    );
+                    gradient.addColorStop(
+                        0,
+                        `rgba(251, 191, 36, ${brightness * 0.8})`,
+                    );
+                    gradient.addColorStop(
+                        0.3,
+                        `rgba(245, 158, 11, ${brightness * 0.4})`,
+                    );
+                    gradient.addColorStop(1, "transparent");
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.glowSize * 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Core
+                    ctx.fillStyle = `rgba(254, 243, 199, ${brightness})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            const fireflies: Firefly[] = [];
+            for (let i = 0; i < 80; i++) fireflies.push(new Firefly());
+
+            function animate() {
+                ctx.fillStyle = "rgba(10, 15, 10, 0.1)";
+                ctx.fillRect(0, 0, width, height);
+                fireflies.forEach((f) => {
+                    f.update();
+                    f.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener("resize", () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            animate();
+        </script>
+    </body>
+</html>

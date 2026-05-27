@@ -1,0 +1,396 @@
+---
+// Black Hole Theme - High Fidelity WebGL Simulation
+console.log("SERVER SIDE DEBUG: Processing blackhole.astro");
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>🕳️ Schwarzschild Black Hole</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                background: #000;
+                overflow: hidden;
+                color: white;
+                font-family: "Inter", sans-serif;
+            }
+            #canvas-container {
+                position: fixed;
+                inset: 0;
+                z-index: 1;
+            }
+            .ui-layer {
+                position: fixed;
+                inset: 0;
+                z-index: 10;
+                pointer-events: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-top: 2rem;
+            }
+            .title {
+                font-size: clamp(2rem, 5vw, 4rem);
+                font-weight: 700;
+                background: linear-gradient(180deg, #fff 0%, #aaa 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-shadow: 0 0 30px rgba(255, 100, 0, 0.3);
+            }
+            .nav {
+                position: fixed;
+                bottom: 2rem;
+                display: flex;
+                gap: 1rem;
+                pointer-events: auto;
+                background: rgba(0, 0, 0, 0.5);
+                padding: 0.5rem 1rem;
+                border-radius: 2rem;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .nav a {
+                color: #888;
+                text-decoration: none;
+                transition: color 0.3s;
+                font-size: 0.9rem;
+            }
+            .nav a:hover,
+            .nav a.active {
+                color: #fff;
+            }
+            .loading {
+                position: fixed;
+                inset: 0;
+                z-index: 20;
+                background: #000;
+                display: flex;
+                place-items: center;
+                place-content: center;
+                font-size: 1.5rem;
+                color: #888;
+                transition: opacity 1s;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="loading" id="loader">Initializing Simulation...</div>
+
+        <div class="ui-layer">
+            <h1 class="title">Event Horizon v4.3 (Final Polish)</h1>
+            <div class="nav">
+                <a href="/stars" class="active">Black Hole</a>
+                <a href="/stars/galaxy">Galaxy</a>
+                <a href="/stars/fireworks">Fireworks</a>
+                <a href="/">Home</a>
+            </div>
+        </div>
+
+        <div id="canvas-container"></div>
+
+        <script type="module" is:inline>
+            // Use CDN for Three.js to avoid local bundling issues
+            import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+            const fragmentShader = `
+uniform float iTime;
+uniform vec2 iResolution;
+uniform vec2 iMouse;
+
+#define MAX_STEPS 150 // Balanced for 60fps
+#define MAX_DIST 50.0
+#define SURF_DIST 0.01 // Relaxed threshold
+
+// -------------------------------------------------------------
+// NOISE FUNCTIONS (FBM)
+// -------------------------------------------------------------
+
+// Hash function for noise
+float hash(vec2 p) {
+    p = 50.0 * fract(p * 0.3183099 + vec2(0.71, 0.113));
+    return -1.0 + 2.0 * fract(p.x * p.y * (p.x + p.y));
+}
+
+// 2D Noise
+float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), u.x),
+               mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+
+// Fractal Brownian Motion
+float fbm(vec2 p) {
+    float f = 0.0;
+    mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
+    f += 0.5000 * noise(p); p = m * p;
+    f += 0.2500 * noise(p); p = m * p;
+    f += 0.1250 * noise(p); p = m * p;
+    f += 0.0625 * noise(p); p = m * p;
+    return f;
+}
+
+// -------------------------------------------------------------
+// BLACK HOLE MAPPING
+// -------------------------------------------------------------
+
+vec4 getDiskColor(vec3 p) {
+    float r = length(p.xz);
+    // Accretion disk range
+    float innerR = 2.6; 
+    float outerR = 14.0;
+    
+    // Soft Edges (Fixing "Incisors")
+    // Instead of hard return vec4(0.0), we fade out
+    float fade = smoothstep(innerR, innerR + 0.3, r) * (1.0 - smoothstep(outerR - 1.0, outerR, r));
+    if (fade < 0.01) return vec4(0.0);
+    
+    // Vertical profile (thicker at edges, thin in middle)
+    float h = 0.02 + 0.08 * (r - innerR) / (outerR - innerR); 
+    
+    // Soft vertical fade
+    float vFade = smoothstep(h, h * 0.2, abs(p.y));
+    
+    // Coordinate mapping for noise
+    float angle = atan(p.z, p.x);
+    vec2 uv = vec2(r * 2.0 - iTime * 1.5, angle * 4.0 + r * 0.5); // Flow animation
+    
+    // FBM Noise for gas filaments
+    float gas = fbm(uv);
+    gas = gas * 0.5 + 0.5; // Normalize
+    
+    // Temperature gradient
+    float temp = 1.0 - smoothstep(innerR, outerR, r);
+    temp = pow(temp, 1.5); // Hotter near center
+    
+    // Doppler Beaming (Enhanced Contrast for V3.0)
+    // Darker dark side, brighter bright side
+    float doppler = 1.0 - (p.x * 4.0 / (r * r + 2.0)); 
+    doppler = pow(doppler, 1.2); // Non-linear curve for punchy contrast
+    
+    // NASA Colors: Orange/Gold to Red to Black
+    vec3 colHot = vec3(1.2, 0.9, 0.6); // Boosted Gold
+    vec3 colMid = vec3(1.0, 0.4, 0.05); // Deep Orange
+    vec3 colCold = vec3(0.4, 0.05, 0.02); // Dark Red
+    
+    vec3 color = mix(colCold, colMid, smoothstep(0.0, 0.6, temp));
+    color = mix(color, colHot, smoothstep(0.6, 1.0, temp));
+    
+    // Apply detail and density
+    float density = smoothstep(0.2, 0.8, gas) * temp * fade * vFade;
+    
+    // Boost brightness for bloom look
+    color *= doppler * 5.0;
+
+    return vec4(color, density);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    vec2 uv = (fragCoord - 0.5 * iResolution.xy) / iResolution.y;
+    
+    // Camera Setup (Mouse Interactive)
+    float pitch = 0.15 + 0.3 * sin(iTime * 0.1) + (iMouse.y / iResolution.y - 0.5) * 0.5;
+    float camDist = 18.0;
+    
+    vec3 ro = vec3(0.0, camDist * sin(pitch), -camDist * cos(pitch));
+    vec3 lookAt = vec3(0.0, 0.0, 0.0);
+    
+    vec3 fwd = normalize(lookAt - ro);
+    vec3 right = normalize(cross(vec3(0,1,0), fwd));
+    vec3 up = cross(fwd, right);
+    vec3 rd = normalize(fwd + uv.x * right + uv.y * up);
+
+    vec3 p = ro;
+    vec3 curRd = rd;
+    vec3 col = vec3(0.0);
+    
+    // Volumetric Glow Accumulators
+    vec3 glowAcc = vec3(0.0);
+    vec4 diskAcc = vec4(0.0);
+    
+    bool hitHorizon = false;
+    
+    for(int i=0; i < MAX_STEPS; i++) {
+        float d2 = dot(p, p);
+        float distToCenter = sqrt(d2);
+        
+        // --- GRAVITATIONAL LENSING ---
+        // 1.5 * Rs / r^2 approximation
+        float force = 0.12 / d2; 
+        vec3 toCenter = -normalize(p);
+        
+        // Bend ray
+        curRd = normalize(curRd + toCenter * force * 1.5);
+        
+        // Adaptive Step Size
+        float stepSize = max(0.02, distToCenter * 0.03); 
+        
+        // Finer steps near disk/horizon for sharpness
+        bool closeToPlane = abs(p.y) < 1.0 && distToCenter < 15.0;
+        if(closeToPlane) stepSize = 0.01; // Increased precision
+        
+        // Event Horizon Collision (Schwarzschild radius = 2.5 approx)
+        if(distToCenter < 2.6) {
+            // Pure Black Hole (Absorbs everything)
+            hitHorizon = true;
+            break; 
+        }
+        
+        // --- DISK ACCUMULATION ---
+        if (closeToPlane && distToCenter > 2.6) {
+             vec4 dSample = getDiskColor(p);
+             // Alpha blend: src over dst
+             // Boost density significantly for solid look
+             float coverage = dSample.a * stepSize * 40.0; 
+             coverage = clamp(coverage, 0.0, 1.0);
+             
+             diskAcc.rgb += dSample.rgb * coverage * (1.0 - diskAcc.a);
+             diskAcc.a += coverage * (1.0 - diskAcc.a);
+             
+             if(diskAcc.a > 0.99) break;
+        }
+        
+        p += curRd * stepSize;
+        if(length(p) > MAX_DIST) break;
+    }
+    
+    // Background Stars (with occlusion)
+    if (!hitHorizon && diskAcc.a < 0.98) {
+        vec3 dir = curRd;
+        // Simple starfield
+        float s = sin(dir.x*150.0)*sin(dir.y*150.0)*sin(dir.z*150.0);
+        float starIntensity = smoothstep(0.995, 1.0, s);
+        
+        // Milky way band
+        float band = 1.0 - smoothstep(0.0, 0.4, abs(dir.y));
+        vec3 bg = vec3(0.0, 0.02, 0.05) * band;
+        bg += vec3(1.0) * starIntensity;
+        
+        col += bg * (1.0 - diskAcc.a);
+    }
+    
+    // Combine Disk & Glow
+    col += diskAcc.rgb;
+    col += glowAcc; // Add photon ring glow
+    
+    // Tone Mapping
+    col = col / (col + vec3(1.0)); // Reinhart
+    col = pow(col, vec3(0.4545)); // Gamma Correction
+    
+    fragColor = vec4(col, 1.0);
+}
+
+void main() {
+    // Single-Pass Rendering (Optimized)
+    // Soft edges handles the anti-aliasing naturally
+    mainImage(gl_FragColor, gl_FragCoord.xy);
+    
+    // Subtle Dither
+    float dither = fract(sin(gl_FragCoord.x * 12.9898 + gl_FragCoord.y * 78.233) * 43758.5453);
+    gl_FragColor.rgb += (dither - 0.5) / 255.0;
+}
+`;
+
+            const LOADER = document.getElementById("loader");
+            const CONTAINER = document.getElementById("canvas-container");
+
+            console.log(
+                "DEBUG: Starting Black Hole Simulation Script (Opimized v4)",
+            );
+
+            try {
+                // Scene Setup
+                const scene = new THREE.Scene();
+                const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+                const renderer = new THREE.WebGLRenderer({
+                    antialias: false,
+                    alpha: false,
+                });
+
+                // OPTIMIZED DPI (Cap at 2.0x)
+                // Prevents 4k/5k rendering on mobile/retina which causes lag
+                const pixelRatio = Math.min(window.devicePixelRatio, 2.0);
+                renderer.setPixelRatio(pixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                if (!CONTAINER) throw new Error("Canvas container not found");
+                CONTAINER.appendChild(renderer.domElement);
+
+                // Plane for Shader (Full Screen Quad)
+                const geometry = new THREE.PlaneGeometry(2, 2);
+
+                const material = new THREE.ShaderMaterial({
+                    fragmentShader,
+                    uniforms: {
+                        iTime: { value: 0 },
+                        iResolution: {
+                            value: new THREE.Vector2(
+                                window.innerWidth * pixelRatio,
+                                window.innerHeight * pixelRatio,
+                            ),
+                        },
+                        iMouse: { value: new THREE.Vector2(0, 0) },
+                    },
+                });
+
+                const mesh = new THREE.Mesh(geometry, material);
+                scene.add(mesh);
+
+                // Animation Loop
+                function animate(time) {
+                    requestAnimationFrame(animate);
+
+                    // Update time
+                    material.uniforms.iTime.value = time * 0.001;
+
+                    renderer.render(scene, camera);
+                }
+
+                // Handle Resize
+                window.addEventListener("resize", () => {
+                    const width = window.innerWidth;
+                    const height = window.innerHeight;
+                    const dpr = Math.min(window.devicePixelRatio, 2.0);
+
+                    renderer.setSize(width, height);
+                    material.uniforms.iResolution.value.set(
+                        width * dpr,
+                        height * dpr,
+                    );
+                });
+
+                // Handle Mouse for Orbit
+                window.addEventListener("mousemove", (e) => {
+                    material.uniforms.iMouse.value.set(e.clientX, e.clientY);
+                });
+
+                // Start
+                console.log("DEBUG: Animation loop starting");
+                animate();
+
+                // Hide loader on success
+                if (LOADER) {
+                    LOADER.style.opacity = "0";
+                    setTimeout(() => LOADER.remove(), 1000);
+                }
+            } catch (err) {
+                console.error("CRITICAL ERROR:", err);
+                if (LOADER) {
+                    LOADER.innerText = "Error: " + err.message;
+                    LOADER.style.color = "red";
+                }
+            }
+        </script>
+    </body>
+</html>

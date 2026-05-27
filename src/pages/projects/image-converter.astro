@@ -1,0 +1,536 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { ArrowLeft } from "@lucide/astro";
+---
+
+<Layout
+    title="AVIF Image Converter | Ban Tran"
+    description="Convert your images to AVIF format for better compression and web performance"
+>
+    <!-- Back Navigation -->
+    <div class="mb-8">
+        <a
+            href="/projects"
+            class="text-accent inline-flex items-center gap-2 hover:underline"
+        >
+            <ArrowLeft size="1rem" />
+            Back to Projects
+        </a>
+    </div>
+
+    <!-- Project Header -->
+    <section class="mb-12">
+        <h1 class="mb-4 text-4xl font-bold lg:text-5xl">
+            <span class="fancy-highlight">AVIF Image Converter</span>
+        </h1>
+        <div class="mb-6 flex flex-wrap gap-2">
+            <span class="badge badge-accent">AVIF</span>
+            <span class="badge badge-accent">Image Optimization</span>
+            <span class="badge badge-accent">Web Performance</span>
+        </div>
+        <p class="text-muted text-lg">
+            Convert your images to AVIF format for superior compression and
+            faster web performance. AVIF offers better quality at smaller file
+            sizes compared to JPEG and PNG.
+        </p>
+    </section>
+
+    <!-- Converter Interface -->
+    <section class="mb-12">
+        <!-- <div class="rounded-xl border border-white/20 bg-white/10 p-8 backdrop-blur-xl"> -->
+        <!-- Upload Area -->
+        <div class="mb-6">
+            <label class="mb-2 block text-sm font-medium">Upload Image</label>
+            <div
+                id="dropZone"
+                class="hover:border-accent cursor-pointer rounded-lg border-2 border-dashed border-white/30 bg-white/5 p-8 text-center transition-colors hover:bg-white/10"
+            >
+                <input
+                    type="file"
+                    id="fileInput"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    class="hidden"
+                />
+                <svg
+                    class="text-accent mx-auto mb-4 h-12 w-12"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    ></path>
+                </svg>
+                <p class="text-muted mb-2">Click to upload or drag and drop</p>
+                <p class="text-muted text-xs">
+                    PNG, JPG, JPEG, WEBP (Max 10MB)
+                </p>
+            </div>
+            <div id="fileInfo" class="mt-3 hidden">
+                <p class="text-sm">
+                    <strong>File:</strong>
+                    <span id="fileName"></span>
+                </p>
+                <p class="text-sm">
+                    <strong>Size:</strong>
+                    <span id="fileSize"></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Quality Slider -->
+        <div class="mb-6">
+            <label
+                class="mb-2 flex items-center justify-between text-sm font-medium"
+            >
+                <span>Quality</span>
+                <span class="text-accent" id="qualityValue">50</span>
+            </label>
+            <input
+                type="range"
+                id="qualitySlider"
+                min="1"
+                max="100"
+                value="50"
+                class="range range-accent w-full"
+            />
+            <div class="text-muted mt-1 flex justify-between text-xs">
+                <span>Lower size</span>
+                <span>Higher quality</span>
+            </div>
+        </div>
+
+        <!-- Convert Button -->
+        <button id="convertBtn" disabled class="btn btn-accent btn-block mb-6">
+            <svg
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                ></path>
+            </svg>
+            Convert to AVIF
+        </button>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="mb-6 hidden text-center">
+            <div class="inline-flex items-center gap-3">
+                <div
+                    class="border-accent h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"
+                >
+                </div>
+                <p class="text-muted">Converting image...</p>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="mb-6 hidden">
+            <div class="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                <p class="font-semibold text-red-400">Conversion Failed</p>
+                <p class="mt-1 text-sm text-red-300" id="errorText"></p>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden">
+            <div
+                class="mb-4 rounded-lg border border-green-500/20 bg-green-500/10 p-4"
+            >
+                <p class="font-semibold text-green-400">
+                    ✓ Conversion Successful
+                </p>
+                <div class="mt-2 grid gap-2 text-sm md:grid-cols-3">
+                    <div>
+                        <span class="text-muted">Original:</span>
+                        <span class="ml-2 font-medium" id="originalSize"></span>
+                    </div>
+                    <div>
+                        <span class="text-muted">AVIF:</span>
+                        <span class="ml-2 font-medium" id="avifSize"></span>
+                    </div>
+                    <div>
+                        <span class="text-muted">Saved:</span>
+                        <span
+                            class="ml-2 font-medium text-green-400"
+                            id="savings"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Before/After Image Slider -->
+            <div class="mb-4">
+                <p class="mb-2 text-center text-sm font-medium">
+                    Drag the slider to compare
+                </p>
+                <div
+                    class="relative overflow-hidden rounded-lg border border-white/20"
+                    id="comparisonContainer"
+                >
+                    <!-- AVIF Image (Background) -->
+                    <img
+                        id="convertedImage"
+                        class="block w-full"
+                        alt="Converted to AVIF"
+                    />
+
+                    <!-- Original Image (Foreground with clip) -->
+                    <div
+                        id="beforeImageContainer"
+                        class="absolute inset-0"
+                        style="clip-path: inset(0 50% 0 0);"
+                    >
+                        <img
+                            id="originalImage"
+                            class="block w-full"
+                            alt="Original"
+                        />
+                    </div>
+
+                    <!-- Slider Handle -->
+                    <div
+                        id="sliderHandle"
+                        class="absolute top-0 bottom-0 w-1 cursor-ew-resize bg-white"
+                        style="left: 50%; transform: translateX(-50%);"
+                    >
+                        <div
+                            class="absolute top-1/2 left-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg"
+                        >
+                            <svg
+                                class="h-6 w-6 text-gray-800"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Labels -->
+                    <div
+                        class="absolute top-4 left-4 rounded-full bg-black/50 px-3 py-1 text-xs font-medium backdrop-blur-sm"
+                    >
+                        Original
+                    </div>
+                    <div
+                        class="absolute top-4 right-4 rounded-full bg-black/50 px-3 py-1 text-xs font-medium backdrop-blur-sm"
+                    >
+                        AVIF
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <button id="downloadBtn" class="btn btn-accent btn-block">
+                <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    ></path>
+                </svg>
+                Download AVIF Image
+            </button>
+        </div>
+        <!-- </div> -->
+    </section>
+
+    <!-- Back Navigation -->
+    <div class="mt-12">
+        <a
+            href="/projects"
+            class="text-accent inline-flex items-center gap-2 hover:underline"
+        >
+            <ArrowLeft size="1rem" />
+            Back to Projects
+        </a>
+    </div>
+
+    <script>
+        let selectedFile: File | null = null;
+        let convertedBlob: Blob | null = null;
+
+        const fileInput = document.getElementById(
+            "fileInput",
+        ) as HTMLInputElement;
+        const dropZone = document.getElementById("dropZone");
+        const fileInfo = document.getElementById("fileInfo");
+        const fileName = document.getElementById("fileName");
+        const fileSize = document.getElementById("fileSize");
+        const qualitySlider = document.getElementById(
+            "qualitySlider",
+        ) as HTMLInputElement;
+        const qualityValue = document.getElementById("qualityValue");
+        const convertBtn = document.getElementById(
+            "convertBtn",
+        ) as HTMLButtonElement;
+        const loadingState = document.getElementById("loadingState");
+        const errorMessage = document.getElementById("errorMessage");
+        const errorText = document.getElementById("errorText");
+        const results = document.getElementById("results");
+        const originalImage = document.getElementById(
+            "originalImage",
+        ) as HTMLImageElement;
+        const convertedImage = document.getElementById(
+            "convertedImage",
+        ) as HTMLImageElement;
+        const originalSize = document.getElementById("originalSize");
+        const avifSize = document.getElementById("avifSize");
+        const savings = document.getElementById("savings");
+        const downloadBtn = document.getElementById("downloadBtn");
+
+        // Format file size
+        function formatFileSize(bytes: number): string {
+            if (bytes < 1024) return bytes + " B";
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+            return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+        }
+
+        // Handle file selection
+        function handleFileSelect(file: File) {
+            if (!file.type.startsWith("image/")) {
+                alert("Please select an image file");
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File size must be less than 10MB");
+                return;
+            }
+
+            selectedFile = file;
+            if (fileName) fileName.textContent = file.name;
+            if (fileSize) fileSize.textContent = formatFileSize(file.size);
+            fileInfo?.classList.remove("hidden");
+            convertBtn.disabled = false;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (originalImage && e.target?.result) {
+                    originalImage.src = e.target.result as string;
+                }
+            };
+            reader.readAsDataURL(file);
+
+            // Hide previous results
+            results?.classList.add("hidden");
+            errorMessage?.classList.add("hidden");
+        }
+
+        // Click to upload
+        dropZone?.addEventListener("click", () => fileInput?.click());
+
+        // File input change
+        fileInput?.addEventListener("change", (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) handleFileSelect(file);
+        });
+
+        // Drag and drop
+        dropZone?.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("border-accent", "bg-white/10");
+        });
+
+        dropZone?.addEventListener("dragleave", () => {
+            dropZone.classList.remove("border-accent", "bg-white/10");
+        });
+
+        dropZone?.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("border-accent", "bg-white/10");
+            const file = e.dataTransfer?.files[0];
+            if (file) handleFileSelect(file);
+        });
+
+        // Quality slider
+        qualitySlider?.addEventListener("input", (e) => {
+            if (qualityValue) {
+                qualityValue.textContent = (e.target as HTMLInputElement).value;
+            }
+        });
+
+        // Convert button
+        convertBtn?.addEventListener("click", async () => {
+            if (!selectedFile) return;
+
+            // Hide previous results/errors
+            results?.classList.add("hidden");
+            errorMessage?.classList.add("hidden");
+            loadingState?.classList.remove("hidden");
+            convertBtn.disabled = true;
+
+            try {
+                const quality = qualitySlider?.value || "50";
+                
+                // Fetch the API URL dynamically from our Go backend
+                let apiUrlBase = "";
+                try {
+                    const configRes = await fetch("/api/config");
+                    if (!configRes.ok) {
+                        throw new Error(`Server returned status ${configRes.status}`);
+                    }
+                    const config = await configRes.json();
+                    if (!config.imageConverterApiUrl) {
+                        throw new Error("API URL is missing from configuration.");
+                    }
+                    apiUrlBase = config.imageConverterApiUrl;
+                } catch (e) {
+                    throw new Error(`Failed to load converter configuration: ${e instanceof Error ? e.message : "Network error"}`);
+                }
+
+                const apiUrl = `${apiUrlBase}?quality=${quality}`;
+
+                // Read file as array buffer
+                const arrayBuffer = await selectedFile.arrayBuffer();
+
+                // Make API request
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/octet-stream",
+                    },
+                    body: arrayBuffer,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+
+                // Get converted image as blob
+                convertedBlob = await response.blob();
+
+                // Display converted image
+                const url = URL.createObjectURL(convertedBlob);
+                if (convertedImage) {
+                    convertedImage.src = url;
+                }
+
+                // Calculate savings
+                const originalSizeBytes = selectedFile.size;
+                const avifSizeBytes = convertedBlob.size;
+                const savedBytes = originalSizeBytes - avifSizeBytes;
+                const savedPercent = (
+                    (savedBytes / originalSizeBytes) *
+                    100
+                ).toFixed(1);
+
+                if (originalSize)
+                    originalSize.textContent =
+                        formatFileSize(originalSizeBytes);
+                if (avifSize)
+                    avifSize.textContent = formatFileSize(avifSizeBytes);
+                if (savings)
+                    savings.textContent = `${savedPercent}% (${formatFileSize(savedBytes)})`;
+
+                // Show results
+                loadingState?.classList.add("hidden");
+                results?.classList.remove("hidden");
+            } catch (error) {
+                console.error("Conversion error:", error);
+                loadingState?.classList.add("hidden");
+                if (errorText) {
+                    errorText.textContent =
+                        error instanceof Error
+                            ? error.message
+                            : "Unknown error occurred";
+                }
+                errorMessage?.classList.remove("hidden");
+                convertBtn.disabled = false;
+            }
+        });
+
+        // Before/After Slider functionality
+        const comparisonContainer = document.getElementById(
+            "comparisonContainer",
+        );
+        const beforeImageContainer = document.getElementById(
+            "beforeImageContainer",
+        );
+        const sliderHandle = document.getElementById("sliderHandle");
+        let isDragging = false;
+
+        function updateSliderPosition(clientX: number) {
+            if (!comparisonContainer) return;
+
+            const rect = comparisonContainer.getBoundingClientRect();
+            let position = ((clientX - rect.left) / rect.width) * 100;
+
+            // Clamp between 0 and 100
+            position = Math.max(0, Math.min(100, position));
+
+            // Update clip path and slider position
+            if (beforeImageContainer) {
+                beforeImageContainer.style.clipPath = `inset(0 ${100 - position}% 0 0)`;
+            }
+            if (sliderHandle) {
+                sliderHandle.style.left = `${position}%`;
+            }
+        }
+
+        // Mouse events
+        sliderHandle?.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            isDragging = true;
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            updateSliderPosition(e.clientX);
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+
+        // Touch events for mobile
+        sliderHandle?.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            isDragging = true;
+        });
+
+        document.addEventListener("touchmove", (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            updateSliderPosition(touch.clientX);
+        });
+
+        document.addEventListener("touchend", () => {
+            isDragging = false;
+        });
+
+        // Download button
+        downloadBtn?.addEventListener("click", () => {
+            if (!convertedBlob || !selectedFile) return;
+
+            const url = URL.createObjectURL(convertedBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = selectedFile.name.replace(/\.[^/.]+$/, "") + ".avif";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</Layout>

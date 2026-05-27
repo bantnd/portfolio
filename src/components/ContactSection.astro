@@ -1,0 +1,95 @@
+---
+import { about } from "../consts";
+import Icon from "./Icon.astro";
+import ContactForm from "./ContactForm.astro";
+---
+
+<section id="contact" class="mt-20 px-2 lg:mt-32 md:px-8">
+  <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
+    <!-- Left Column: Info & Socials -->
+    <div class="flex flex-col justify-center pl-4">
+      <div class="mb-6">
+         <span class="text-accent font-bold tracking-widest uppercase text-xs">Get in Touch</span>
+      </div>
+      
+      <h2 class="text-4xl font-black tracking-tighter lg:text-5xl leading-tight mb-6">
+        Let's Work <span class="fancy-highlight">Together</span>
+      </h2>
+      <p class="text-muted text-lg leading-relaxed">
+        {about.getInTouch}
+      </p>
+
+      <div class="mt-8">
+        <p class="text-muted mb-4 text-base">
+          <span class="text-base-content font-medium">Location:</span> Ho Chi Minh
+          City, Vietnam
+        </p>
+      </div>
+
+      <div class="mt-10 flex flex-wrap gap-3">
+        {
+          about.links.map((link) => (
+            <a
+              href={link.href}
+              target="_blank"
+              class="btn btn-soft btn-circle btn-accent light-mode-subtle"
+              title={link.icon}
+            >
+              {link.iconUrl ? (
+                <div
+                  class="social-icon"
+                  style={{
+                    width: "1.5rem",
+                    height: "1.5rem",
+                    maskImage: `url(${link.iconUrl})`,
+                    WebkitMaskImage: `url(${link.iconUrl})`,
+                    maskSize: "contain",
+                    WebkitMaskSize: "contain",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskPosition: "center",
+                    WebkitMaskPosition: "center",
+                  }}
+                />
+              ) : (
+                <Icon name={link.icon} size="1.5rem" />
+              )}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- Right Column: Contact Form -->
+    <div class="relative">
+      <!-- Glass Card -->
+      <div
+        class="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-xl lg:p-10"
+      >
+        <ContactForm />
+      </div>
+
+      <!-- Decorative Elements behind card -->
+      <div
+        class="bg-accent/10 absolute -top-10 -right-10 -z-10 h-64 w-64 rounded-full blur-3xl"
+      >
+      </div>
+      <div
+        class="absolute -bottom-10 -left-10 -z-10 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl"
+      >
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Social icon styling */
+  .social-icon {
+    background-color: currentColor;
+    transition: background-color 0.3s ease;
+  }
+
+  :global([data-theme="dark"]) .social-icon {
+    background-color: var(--color-accent);
+  }
+</style>

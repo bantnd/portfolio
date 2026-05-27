@@ -1,0 +1,24 @@
+# Bun configuration file
+# https://bun.sh/docs/runtime/bunfig
+
+[install]
+# Use exact versions from package.json
+exact = true
+
+# Optimize for production builds
+production = false
+
+# Install peer dependencies automatically
+peer = true
+
+[install.cache]
+# Enable caching for faster installs
+disable = false
+
+[test]
+# Test runner configuration
+preload = []
+
+[run]
+# Shell to use for scripts
+shell = "bun"

@@ -1,0 +1,74 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import { meta } from "../consts";
+const {
+  title = meta.about.title,
+  description = meta.about.description,
+  image,
+} = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <BaseHead title={title} description={description} image={image} />
+  </head>
+
+  <body class="flex min-h-svh flex-col overflow-x-hidden">
+    <!-- Parallax background with stardust -->
+    <div
+      class="fixed inset-0 bg-[url(/stardust.png)] bg-repeat"
+      style="transform: translateZ(0); will-change: transform;"
+      id="stardust-bg"
+    >
+    </div>
+
+    <!-- Background overlay for better readability -->
+    <div class="bg-overlay fixed inset-0"></div>
+
+    <div class="relative z-10 flex-1">
+      <Header />
+      <main
+        class="mx-auto mt-6 w-full max-w-2xl px-4 sm:max-w-3xl lg:max-w-4xl xl:max-w-5xl"
+      >
+        <slot />
+      </main>
+    </div>
+    <Footer />
+
+    <script>
+      // Infinite parallax scrolling effect for stardust background
+      const stardustBg = document.getElementById("stardust-bg");
+      let ticking = false;
+
+      // Get the background image size to calculate when to loop
+      const img = new Image();
+      img.src = "/stardust.png";
+      let bgHeight = 0;
+
+      img.onload = () => {
+        bgHeight = img.height;
+      };
+
+      function updateParallax() {
+        const scrolled = window.pageYOffset;
+        if (stardustBg && bgHeight) {
+          // Calculate position with modulo for infinite loop
+          const offset = (scrolled * -0.125) % bgHeight;
+          stardustBg.style.backgroundPosition = `0 ${offset}px`;
+        }
+        ticking = false;
+      }
+
+      function requestTick() {
+        if (!ticking) {
+          requestAnimationFrame(updateParallax);
+          ticking = true;
+        }
+      }
+
+      window.addEventListener("scroll", requestTick, { passive: true });
+    </script>
+  </body>
+</html>

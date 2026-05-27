@@ -1,0 +1,225 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui";
+
+@theme {
+  --default-font-family: "Inter", var(--font-sans);
+}
+
+/* Reader mode warm background for light theme */
+[data-theme="light"] {
+  --b1: 93% 0.09 75 !important;
+  /* Warmer cream/beige background */
+  --bc: 25% 0.015 100 !important;
+  /* Darker text for contrast */
+}
+
+[data-theme="light"] body,
+[data-theme="light"] html {
+  background-color: oklch(93% 0.09 75) !important;
+}
+
+@layer components {
+  .fancy-highlight {
+    @apply rounded-md bg-[var(--color-base-300)]/30 underline decoration-[var(--color-accent)] decoration-2 underline-offset-4 backdrop-blur-2xl;
+  }
+
+  .primary-badge {
+    @apply badge badge-soft;
+  }
+
+  .primary-underline {
+    @apply underline decoration-[var(--color-primary)] decoration-2 underline-offset-4;
+  }
+
+  /* Better text contrast for light and dark modes */
+  .text-muted {
+    @apply text-base-content/90;
+  }
+
+  /* Background overlay - only for light mode, no blur to keep text sharp */
+  [data-theme="light"] .bg-overlay {
+    @apply bg-base-100/70;
+  }
+
+  /* Acrylic/glassmorphism effect for all buttons - Windows 11 / iOS style */
+  .light-mode-subtle {
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  /* Light mode acrylic styling */
+  [data-theme="light"] .light-mode-subtle.btn-primary {
+    background: rgba(255, 255, 255, 0.6) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.7) 0%,
+        rgba(255, 255, 255, 0.5) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: oklch(var(--a)) !important;
+  }
+
+  [data-theme="light"] .light-mode-subtle.btn-primary *,
+  [data-theme="light"] .light-mode-subtle.btn-primary svg {
+    color: oklch(var(--a)) !important;
+  }
+
+  [data-theme="light"] .light-mode-subtle.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.8) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(255, 255, 255, 0.65) 100%) !important;
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  [data-theme="light"] .light-mode-subtle.btn-soft,
+  [data-theme="light"] .light-mode-subtle.btn-accent {
+    background: rgba(255, 255, 255, 0.5) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.4) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
+
+  [data-theme="light"] .light-mode-subtle.btn-soft:hover,
+  [data-theme="light"] .light-mode-subtle.btn-accent:hover {
+    background: rgba(255, 255, 255, 0.7) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.8) 0%,
+        rgba(255, 255, 255, 0.6) 100%) !important;
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  /* Dark mode acrylic effect */
+  [data-theme="dark"] .light-mode-subtle.btn-primary {
+    background: rgba(0, 0, 0, 0.3) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: oklch(var(--a)) !important;
+  }
+
+  [data-theme="dark"] .light-mode-subtle.btn-primary *,
+  [data-theme="dark"] .light-mode-subtle.btn-primary svg {
+    color: oklch(var(--a)) !important;
+  }
+
+  [data-theme="dark"] .light-mode-subtle.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.25) 0%,
+        rgba(255, 255, 255, 0.1) 100%) !important;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  [data-theme="dark"] .light-mode-subtle.btn-soft,
+  [data-theme="dark"] .light-mode-subtle.btn-accent {
+    background: rgba(0, 0, 0, 0.25) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.04) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  [data-theme="dark"] .light-mode-subtle.btn-soft:hover,
+  [data-theme="dark"] .light-mode-subtle.btn-accent:hover {
+    background: rgba(255, 255, 255, 0.18) !important;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.22) 0%,
+        rgba(255, 255, 255, 0.08) 100%) !important;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  /* Tech Stack Animation */
+  .tech-stack-scroll {
+    @apply relative overflow-hidden;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+
+  .tech-stack-track {
+    @apply flex gap-6;
+  }
+
+  .tech-stack-item {
+    @apply flex flex-col items-center flex-shrink-0;
+    min-width: 100px;
+  }
+
+  @keyframes scroll {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-25%);
+    }
+  }
+
+  .tech-stack-track:hover {
+    animation-play-state: paused;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  h1 {
+    @apply my-1 text-3xl font-bold text-base-content;
+  }
+
+  h2 {
+    @apply my-1 text-2xl font-bold text-base-content;
+  }
+
+  h3 {
+    @apply text-lg font-medium text-base-content;
+  }
+
+  h4 {
+    @apply font-medium text-base-content;
+  }
+
+  h5 {
+    @apply text-sm font-medium text-base-content;
+  }
+
+  h6 {
+    @apply text-xs font-medium text-base-content;
+  }
+
+  p {
+    @apply leading-7;
+  }
+
+  u,
+  a {
+    @apply text-base-content;
+  }
+
+  /* Invert Kafka logo in dark mode for better visibility */
+  [data-theme="dark"] .kafka-icon {
+    filter: invert(1) brightness(1.1);
+  }
+
+  /* Glassmorphism effect */
+  .glass-effect {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  }
+}

@@ -1,0 +1,73 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Image } from "astro:assets";
+import { Github, Globe } from "@lucide/astro";
+import { meta, projects } from "../consts.ts";
+---
+
+<Layout title={meta.projects.title} description={meta.projects.description}>
+  <h2>
+    <span class="fancy-highlight">My Projects</span>
+  </h2>
+
+  <section class="mt-6 flex flex-col gap-10">
+    {
+      projects.map((proj, index) => (
+        <div class="flex gap-4">
+          <div class="w-1/10">
+            {typeof proj.logoImage === "string" ? (
+              <img
+                src={proj.logoImage}
+                alt="Project logo"
+                class={index === 0 ? "kafka-logo" : ""}
+              />
+            ) : (
+              <Image
+                src={proj.logoImage}
+                alt="Project logo"
+                class={index === 0 ? "kafka-logo" : ""}
+              />
+            )}
+          </div>
+          <div class="w-9/10">
+            <h3>{proj.title}</h3>
+            <div class="mt-1 flex flex-wrap gap-1">
+              {proj.techs.map((tech) => (
+                <span class="primary-badge">{tech}</span>
+              ))}
+            </div>
+            <p class="text-muted mt-1">{proj.description}</p>
+            <div class="mt-1 flex gap-2">
+              <a
+                href={proj.sourceHref}
+                target="_blank"
+                class={`btn btn-soft light-mode-subtle flex-1 ${!proj.sourceHref ? "btn-disabled" : ""}`}
+              >
+                <Github />
+                Source
+              </a>
+              <a
+                href={proj.liveHref}
+                target={proj.liveHref?.startsWith("/") ? "_self" : "_blank"}
+                class={`btn btn-soft btn-accent light-mode-subtle flex-1 ${!proj.liveHref ? "btn-disabled" : ""}`}
+              >
+                <Globe />
+                Live
+              </a>
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </section>
+</Layout>
+
+<style>
+  .kafka-logo {
+    filter: brightness(0) invert(1);
+  }
+
+  :global(html[data-theme="light"]) .kafka-logo {
+    filter: brightness(1) invert(0);
+  }
+</style>

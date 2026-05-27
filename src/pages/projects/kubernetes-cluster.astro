@@ -1,0 +1,299 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import {
+    ArrowLeft,
+    Server,
+    Activity,
+    Cpu,
+    HardDrive,
+    ShieldCheck,
+    AlertCircle,
+} from "lucide-react";
+
+const title = "Cluster Telemetry";
+const description =
+    "Real-time monitoring of High-Availability Kubernetes Platform";
+---
+
+<Layout title={title} description={description}>
+    <section class="container mx-auto max-w-5xl px-4 py-12">
+        <!-- Header -->
+        <div class="mb-12">
+            <div class="text-accent mb-6 flex items-center gap-2 text-sm">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="bg-accent absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                    ></span>
+                    <span
+                        class="bg-accent relative inline-flex h-2 w-2 rounded-full"
+                    ></span>
+                </span>
+                Live System Monitor
+            </div>
+            <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
+                High-Availability <span class="text-accent">Kubernetes</span> Platform
+            </h1>
+            <p class="text-muted max-w-2xl text-lg">
+                Real-time telemetry from the production cluster. Monitoring node
+                health, resource utilization, and auto-scaling events.
+            </p>
+        </div>
+
+        <!-- Cluster Status Banner -->
+        <div class="mb-8 grid gap-4 md:grid-cols-4">
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-lg bg-green-500/10 p-2 text-green-400">
+                        <ShieldCheck size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            Cluster Health
+                        </p>
+                        <p class="text-xl font-bold text-green-400">Healthy</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-lg bg-blue-500/10 p-2 text-blue-400">
+                        <Server size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            Total Nodes
+                        </p>
+                        <p class="text-xl font-bold text-white" id="totalNodes">
+                            --
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="rounded-lg bg-purple-500/10 p-2 text-purple-400"
+                    >
+                        <Activity size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            Active Pods
+                        </p>
+                        <p class="text-xl font-bold text-white" id="totalPods">
+                            --
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl border border-white/10 p-6">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="rounded-lg bg-orange-500/10 p-2 text-orange-400"
+                    >
+                        <HardDrive size="1.5rem" />
+                    </div>
+                    <div>
+                        <p
+                            class="text-muted text-xs font-medium tracking-wider uppercase"
+                        >
+                            Storage Used
+                        </p>
+                        <p
+                            class="text-xl font-bold text-white"
+                            id="storageUsed"
+                        >
+                            --
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Node Visualization -->
+        <div class="mb-12">
+            <div class="mb-6 flex items-center justify-between">
+                <h2 class="text-2xl font-semibold">Worker Nodes</h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-muted text-xs">Update Frequency:</span>
+                    <span
+                        class="rounded bg-white/10 px-2 py-1 font-mono text-xs"
+                        >1s</span
+                    >
+                </div>
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="nodeGrid">
+                <!-- Nodes will be injected here -->
+                <div
+                    class="h-48 animate-pulse rounded-xl border border-white/10 bg-white/5 p-6"
+                >
+                </div>
+                <div
+                    class="h-48 animate-pulse rounded-xl border border-white/10 bg-white/5 p-6"
+                >
+                </div>
+                <div
+                    class="h-48 animate-pulse rounded-xl border border-white/10 bg-white/5 p-6"
+                >
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Navigation -->
+        <div class="mt-12">
+            <a
+                href="/projects"
+                class="text-accent inline-flex items-center gap-2 hover:underline"
+            >
+                <ArrowLeft size="1rem" />
+                Back to Projects
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // Simulation Configuration
+        const NODE_COUNT = 6;
+        const UPDATE_INTERVAL = 1000; // 1 second
+
+        interface NodeStats {
+            id: string;
+            name: string;
+            role: "worker" | "control-plane";
+            status: "Ready" | "NotReady";
+            cpu: number; // percentage
+            memory: number; // percentage
+            pods: number;
+        }
+
+        // Generate initial mock nodes
+        const nodes: NodeStats[] = Array.from(
+            { length: NODE_COUNT },
+            (_, i) => ({
+                id: `node-${i}`,
+                name: `k8s-worker-${String(i + 1).padStart(2, "0")}`,
+                role: "worker",
+                status: "Ready",
+                cpu: Math.floor(Math.random() * 60) + 20,
+                memory: Math.floor(Math.random() * 50) + 30,
+                pods: Math.floor(Math.random() * 20) + 10,
+            }),
+        );
+
+        function updateNodeStats() {
+            // Simulate fluctuating metrics
+            nodes.forEach((node) => {
+                // Random walk for CPU
+                const cpuChange = Math.floor(Math.random() * 10) - 5;
+                node.cpu = Math.max(5, Math.min(95, node.cpu + cpuChange));
+
+                // Random walk for Memory
+                const memChange = Math.floor(Math.random() * 6) - 3;
+                node.memory = Math.max(
+                    10,
+                    Math.min(90, node.memory + memChange),
+                );
+
+                // Occasional pod count change
+                if (Math.random() > 0.8) {
+                    const podChange = Math.floor(Math.random() * 3) - 1;
+                    node.pods = Math.max(0, node.pods + podChange);
+                }
+            });
+
+            renderNodes();
+            updateSummary();
+        }
+
+        function getUsageColor(percentage: number): string {
+            if (percentage < 60) return "bg-green-500";
+            if (percentage < 85) return "bg-yellow-500";
+            return "bg-red-500";
+        }
+
+        function renderNodes() {
+            const grid = document.getElementById("nodeGrid");
+            if (!grid) return;
+
+            grid.innerHTML = nodes
+                .map(
+                    (node) => `
+        <div class="glass-effect rounded-xl border border-white/10 p-6 transition-all duration-300 hover:border-accent/30">
+          <div class="mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-3 w-3 rounded-full bg-green-500 animate-pulse"></div>
+              <div>
+                <p class="font-mono text-sm font-bold text-white">${node.name}</p>
+                <p class="text-xs text-muted">${node.role}</p>
+              </div>
+            </div>
+            <span class="rounded bg-white/10 px-2 py-1 text-xs text-white">${node.pods} pods</span>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <div class="mb-1 flex justify-between text-xs">
+                <span class="text-muted">CPU Usage</span>
+                <span class="text-white">${node.cpu}%</span>
+              </div>
+              <div class="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <div 
+                  class="h-full rounded-full transition-all duration-500 ${getUsageColor(node.cpu)}" 
+                  style="width: ${node.cpu}%"
+                ></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="mb-1 flex justify-between text-xs">
+                <span class="text-muted">Memory Usage</span>
+                <span class="text-white">${node.memory}%</span>
+              </div>
+              <div class="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <div 
+                  class="h-full rounded-full transition-all duration-500 ${getUsageColor(node.memory)}" 
+                  style="width: ${node.memory}%"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+                )
+                .join("");
+        }
+
+        function updateSummary() {
+            const totalNodes = document.getElementById("totalNodes");
+            const totalPods = document.getElementById("totalPods");
+            const storageUsed = document.getElementById("storageUsed");
+
+            if (totalNodes) totalNodes.textContent = nodes.length.toString();
+
+            if (totalPods) {
+                const count = nodes.reduce((acc, node) => acc + node.pods, 0);
+                totalPods.textContent = count.toString();
+            }
+
+            if (storageUsed) {
+                // Mock storage calculation
+                storageUsed.textContent = "1.2 TB";
+            }
+        }
+
+        // Start simulation
+        renderNodes();
+        updateSummary();
+        setInterval(updateNodeStats, UPDATE_INTERVAL);
+    </script>
+</Layout>

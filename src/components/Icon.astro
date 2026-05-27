@@ -1,0 +1,13 @@
+---
+import LucideIcon from './LucideIcon';
+
+interface Props {
+  name: string;
+  size?: string | number;
+  class?: string;
+}
+
+const { name, size = "1.25rem", class: className } = Astro.props;
+---
+
+<LucideIcon name={name} size={size} className={className} client:load />

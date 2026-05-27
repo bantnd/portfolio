@@ -1,0 +1,93 @@
+---
+import { about, projects } from "../consts";
+import Icon from "./Icon.astro";
+---
+
+<section class="mt-12 lg:mt-16 px-2 md:px-8">
+  <h2 class="mb-10">
+    <span class="fancy-highlight">Tech Stack</span>
+  </h2>
+
+  <div class="flex flex-col gap-16">
+    <!-- Layer 1: Core Expertise (The Main Event) -->
+    <div class="space-y-8">
+      <div class="flex items-center gap-4">
+        <div class="h-px flex-1 bg-gradient-to-r from-accent/50 to-transparent"></div>
+        <div class="flex flex-col items-center gap-1 px-4">
+          <h3 class="text-3xl font-black tracking-tighter text-base-content italic lg:text-4xl text-center">
+            Core Expertise
+          </h3>
+          <p class="text-muted text-[10px] font-bold uppercase tracking-[0.4em] opacity-60">Architectural Daily Bread</p>
+        </div>
+        <div class="h-px flex-1 bg-gradient-to-l from-accent/50 to-transparent"></div>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-2 lg:gap-8">
+        {about.techStack.core.map((tech) => (
+          <div class="group relative flex items-center gap-6 rounded-[2rem] border border-base-content/10 bg-base-content/[0.03] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-base-content/[0.06] hover:shadow-[0_30px_60px_-15px_rgba(var(--color-accent-rgb),0.2)]">
+            <!-- Animated Glow -->
+            <div class="pointer-events-none absolute inset-0 rounded-[2rem] bg-gradient-to-br from-accent/10 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+            
+            <div class="relative z-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-white/5 p-4 shadow-inner ring-1 ring-white/10 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+              <img src={tech.icon} alt={tech.name} class="h-full w-full object-contain drop-shadow-2xl" />
+            </div>
+            
+            <div class="flex flex-col gap-2">
+              <h4 class="text-xl font-bold text-base-content tracking-tight">{tech.name}</h4>
+              {
+                projects.some(p => p.techs.some(t => t.toLowerCase().includes(tech.name.toLowerCase().replace('apache ', '')))) && (
+                  <div class="flex items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-3 py-1 w-fit">
+                    <Icon name="Briefcase" size="0.75rem" class="text-accent" />
+                    <span class="text-[9px] text-accent font-black uppercase tracking-widest leading-none">
+                      Applied in {projects.find(p => p.techs.some(t => t.toLowerCase().includes(tech.name.toLowerCase().replace('apache ', ''))))?.title.split(' ').slice(0, 2).join(' ')}
+                    </span>
+                  </div>
+                )
+              }
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Layer 2 & 3: Secondary & Familiar (Supporting Architecture) -->
+    <div class="grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+      <!-- Secondary Tools -->
+      <div class="space-y-8">
+        <div class="relative">
+          <h3 class="text-2xl font-black tracking-tighter text-base-content italic lg:text-3xl">
+            Secondary Tools
+          </h3>
+          <p class="text-muted mt-2 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">Production-Ready & Solid</p>
+        </div>
+        
+        <div class="flex flex-wrap gap-3">
+          {about.techStack.secondary.map((tech) => (
+            <div class="group flex items-center gap-3 rounded-2xl border border-base-content/10 bg-base-content/[0.02] px-5 py-4 transition-all hover:scale-105 hover:border-accent/30 hover:bg-base-content/[0.05]">
+              <img src={tech.icon} alt={tech.name} class="h-6 w-6 opacity-60 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" />
+              <span class="text-sm font-bold text-base-content/70 group-hover:text-base-content">{tech.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Familiar With -->
+      <div class="space-y-8">
+        <div class="relative">
+          <h3 class="text-2xl font-black tracking-tighter text-base-content italic lg:text-3xl opacity-80">
+            Other Familiar
+          </h3>
+          <p class="text-muted mt-2 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">Additional Toolkit</p>
+        </div>
+        
+        <div class="flex flex-wrap gap-2.5">
+          {about.techStack.familiar.map((tech) => (
+            <span class="rounded-xl border border-white/5 bg-white/[0.01] px-4 py-2 text-[10px] font-black text-base-content/40 hover:text-base-content hover:border-white/20 hover:bg-white/[0.05] transition-all cursor-default uppercase tracking-widest">
+              {tech.name}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

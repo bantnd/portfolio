@@ -1,0 +1,99 @@
+---
+import { Image } from "astro:assets";
+import { about } from "../consts";
+import Icon from "./Icon.astro";
+---
+
+<section>
+  <div class="px-2 md:px-8">
+    <!-- Title, Tagline, and Profile Picture Row -->
+    <div class="grid gap-6 md:grid-cols-[auto_auto] md:items-center md:gap-12">
+      <!-- Title and Tagline -->
+      <div>
+        <h1 class="text-4xl font-bold lg:text-5xl" set:html={about.headLine} />
+        <p class="mt-4 text-lg text-muted">{about.tagLine}</p>
+        
+        <!-- CV Button -->
+        <div class="mt-8 flex items-center gap-4">
+          <a href="/cv" class="btn btn-accent btn-lg shadow-accent/20 hover:shadow-accent/40 rounded-2xl px-10 font-bold shadow-lg transition-all hover:scale-[1.05] active:scale-[0.98]">
+            <Icon name="FileText" size="1.5rem" />
+            CV
+          </a>
+        </div>
+      </div>
+
+      <!-- Profile Picture -->
+      <div class="flex justify-center">
+        <Image
+          src={about.profilePic}
+          alt="Profile Picture"
+          class="w-32 rounded-2xl md:w-48"
+        />
+      </div>
+    </div>
+
+    <!-- Description -->
+    <p
+      set:html={about.description.replace(
+        /\*\*(.*?)\*\*/g,
+        '<strong class="text-white font-semibold">$1</strong>',
+      )}
+      class="text-muted mt-8 text-lg leading-relaxed"
+    />
+
+    <!-- Social Links -->
+    <div class="mt-8 flex gap-3">
+    {
+      about.links.map((link) => (
+        <a
+          href={link.href}
+          target="_blank"
+          class="btn btn-soft btn-circle btn-accent light-mode-subtle"
+          title={link.icon}
+        >
+          {link.iconUrl ? (
+            <div
+              class="social-icon"
+              style={{
+                width: "1.75rem",
+                height: "1.75rem",
+                maskImage: `url(${link.iconUrl})`,
+                WebkitMaskImage: `url(${link.iconUrl})`,
+                maskSize: "contain",
+                WebkitMaskSize: "contain",
+                maskRepeat: "no-repeat",
+                WebkitMaskRepeat: "no-repeat",
+                maskPosition: "center",
+                WebkitMaskPosition: "center",
+              }}
+            />
+          ) : (
+            <Icon name={link.icon} size="1.75rem" />
+          )}
+        </a>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  /* Social icon styling */
+  .social-icon {
+    background-color: currentColor;
+    /* Default to text color (black/dark in light mode) */
+    transition: background-color 0.3s ease;
+  }
+
+  :global([data-theme="dark"]) .social-icon {
+    background-color: var(--color-accent);
+    /* Use accent color in dark mode */
+  }
+
+  /* Touch-friendly cursor */
+  @media (hover: none) and (pointer: coarse) {
+    .cursor-pointer {
+      cursor: default;
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+</style>

@@ -1,0 +1,143 @@
+---
+import ThemeSwitch from "./ThemeSwitch.astro";
+import { header } from "../consts.ts";
+
+const navItems = [
+  { href: "/#", label: "About" },
+  { href: "/projects", label: "Projects" },
+  { href: "/blog", label: "Blog" },
+  { href: "/#contact", label: "Contact" },
+];
+
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "");
+const subpath = pathname.match(/[^\/]+/g);
+---
+
+<header
+  class="bg-base-300/30 sticky top-0 z-50 flex items-center justify-between p-4 backdrop-blur-md"
+>
+  <a
+    href="/cv"
+    class="flex items-center transition-opacity hover:opacity-80"
+    title="View CV"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="text-accent"
+    >
+      <path
+        d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+      ></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+      <line x1="10" y1="9" x2="8" y2="9"></line>
+    </svg>
+  </a>
+
+  <nav class="flex gap-4">
+    {
+      navItems.map((item) => {
+        const isActive =
+          item.href === pathname || item.href === "/" + (subpath?.[0] || "");
+
+        return (
+          <a
+            href={item.href}
+            class={`link font-medium ${isActive ? "link-primary" : ""}`}
+            data-blog-link={item.label === "Blog" ? "true" : undefined}
+          >
+            {item.label}
+          </a>
+        );
+      })
+    }
+  </nav>
+
+  <ThemeSwitch />
+</header>
+
+<!-- Coming Soon Modal -->
+<div
+  id="comingSoonModal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+>
+  <div
+    class="bg-base-100/90 w-full max-w-md scale-95 transform rounded-2xl border border-white/10 p-8 opacity-0 shadow-2xl backdrop-blur-xl transition-all duration-300"
+    id="comingSoonModalContent"
+  >
+    <div class="mb-6 flex justify-center">
+      <div
+        class="bg-accent/10 flex h-20 w-20 items-center justify-center rounded-full"
+      >
+        <svg
+          class="text-accent h-10 w-10"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+    </div>
+    <h3 class="mb-2 text-center text-2xl font-bold">Coming Soon!</h3>
+    <p class="text-muted text-center">
+      The blog section is currently under construction. Check back soon for
+      exciting content!
+    </p>
+    <button class="btn btn-accent mt-8 w-full" id="closeComingSoonBtn"
+      >Got it</button
+    >
+  </div>
+</div>
+
+<script>
+  const comingSoonModal = document.getElementById("comingSoonModal");
+  const comingSoonModalContent = document.getElementById(
+    "comingSoonModalContent",
+  );
+  const closeComingSoonBtn = document.getElementById("closeComingSoonBtn");
+  const blogLinks = document.querySelectorAll('[data-blog-link="true"]');
+
+  function showComingSoonModal() {
+    comingSoonModal?.classList.remove("hidden");
+    comingSoonModal?.classList.add("flex");
+    setTimeout(() => {
+      comingSoonModalContent?.classList.remove("scale-95", "opacity-0");
+      comingSoonModalContent?.classList.add("scale-100", "opacity-100");
+    }, 10);
+  }
+
+  function hideComingSoonModal() {
+    comingSoonModalContent?.classList.remove("scale-100", "opacity-100");
+    comingSoonModalContent?.classList.add("scale-95", "opacity-0");
+    setTimeout(() => {
+      comingSoonModal?.classList.add("hidden");
+      comingSoonModal?.classList.remove("flex");
+    }, 300);
+  }
+
+  blogLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      showComingSoonModal();
+    });
+  });
+
+  closeComingSoonBtn?.addEventListener("click", hideComingSoonModal);
+  comingSoonModal?.addEventListener("click", (e) => {
+    if (e.target === comingSoonModal) hideComingSoonModal();
+  });
+</script>

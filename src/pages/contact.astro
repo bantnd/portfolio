@@ -1,0 +1,29 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ContactForm from "../components/ContactForm.astro";
+---
+
+<Layout title="Contact" description="Get in touch with me">
+  <section class="mx-auto max-w-4xl">
+    <div class="mb-8">
+      <p class="mb-2 text-sm uppercase tracking-wider text-accent">Let's talk</p>
+      <h1 class="mb-6 text-5xl font-bold lg:text-6xl">Contact</h1>
+      <p class="mb-4 text-lg text-muted">
+        Have a question or a project in mind? Feel free to reach out.
+      </p>
+      <p class="text-base text-muted">
+        <span class="font-medium">Location:</span> VietNam, Ho Chi Minh City
+      </p>
+    </div>
+
+    <div class="mt-12">
+      <ContactForm
+        showLabels={false}
+        inputClass="input input-bordered w-full bg-base-200/50 backdrop-blur-sm transition-all focus:bg-base-200"
+        textareaClass="textarea textarea-bordered w-full bg-base-200/50 backdrop-blur-sm transition-all focus:bg-base-200"
+        buttonClass="btn btn-accent light-mode-subtle w-full transition-all hover:scale-[1.02] sm:w-auto sm:px-16"
+        buttonText="Submit"
+      />
+    </div>
+  </section>
+</Layout>

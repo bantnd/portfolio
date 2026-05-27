@@ -1,0 +1,420 @@
+---
+// Easter egg stardust playground page - hidden fun!
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>✨ Stardust Playground</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Inter", sans-serif;
+                background: linear-gradient(
+                    135deg,
+                    #0a0a0f 0%,
+                    #0d1117 50%,
+                    #0a0a0f 100%
+                );
+                min-height: 100vh;
+                overflow: hidden;
+                cursor: crosshair;
+            }
+
+            #stardust-canvas {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            .content {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                pointer-events: none;
+            }
+
+            .title {
+                font-size: clamp(2.5rem, 8vw, 5rem);
+                font-weight: 700;
+                background: linear-gradient(
+                    135deg,
+                    #ffffff 0%,
+                    #a78bfa 50%,
+                    #22d3ee 100%
+                );
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-shadow: 0 0 60px rgba(167, 139, 250, 0.3);
+                animation: float 6s ease-in-out infinite;
+                text-align: center;
+            }
+
+            .subtitle {
+                font-size: clamp(1rem, 3vw, 1.25rem);
+                color: rgba(255, 255, 255, 0.6);
+                margin-top: 1rem;
+                animation: float 6s ease-in-out infinite 0.5s;
+            }
+
+            .hint {
+                position: fixed;
+                bottom: 5rem;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.875rem;
+                color: rgba(255, 255, 255, 0.4);
+                animation: pulse 2s ease-in-out infinite;
+                pointer-events: auto;
+            }
+
+            .nav {
+                position: fixed;
+                bottom: 2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                justify-content: center;
+                z-index: 20;
+            }
+
+            .nav a {
+                padding: 0.5rem 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                text-decoration: none;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s;
+            }
+
+            .nav a:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .nav a.active {
+                background: rgba(167, 139, 250, 0.3);
+                border-color: rgba(167, 139, 250, 0.6);
+            }
+
+            .hint a {
+                color: rgba(167, 139, 250, 0.8);
+                text-decoration: none;
+                transition: color 0.3s;
+            }
+
+            .hint a:hover {
+                color: #a78bfa;
+            }
+
+            .controls {
+                position: fixed;
+                top: 1.5rem;
+                right: 1.5rem;
+                display: flex;
+                gap: 0.75rem;
+                z-index: 20;
+            }
+
+            .control-btn {
+                padding: 0.5rem 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                cursor: pointer;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s;
+                font-family: inherit;
+            }
+
+            .control-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(167, 139, 250, 0.5);
+            }
+
+            .control-btn.active {
+                background: rgba(167, 139, 250, 0.3);
+                border-color: rgba(167, 139, 250, 0.6);
+            }
+
+            .stats {
+                position: fixed;
+                bottom: 1.5rem;
+                right: 1.5rem;
+                font-size: 0.75rem;
+                color: rgba(255, 255, 255, 0.3);
+                font-family: monospace;
+            }
+
+            @keyframes float {
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-10px);
+                }
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 0.4;
+                }
+                50% {
+                    opacity: 0.8;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="stardust-canvas"></canvas>
+
+        <div class="content">
+            <h1 class="title">✨ Stardust</h1>
+            <p class="subtitle">Move your mouse to attract particles</p>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="connectionsBtn"
+                >Connections: ON</button
+            >
+            <button class="control-btn" id="addBtn">+ Add 50</button>
+            <button class="control-btn" id="clearBtn">Clear</button>
+        </div>
+
+        <p class="hint">
+            Easter egg found! 🥚 Move your mouse to attract particles
+        </p>
+
+        <nav class="nav">
+            <a href="/stars" class="active">✨ Stars</a>
+            <a href="/stars/fireflies">🔥 Fireflies</a>
+            <a href="/stars/galaxy">🌌 Galaxy</a>
+            <a href="/stars/matrix">⚡ Matrix</a>
+            <a href="/stars/fireworks">🎆 Fireworks</a>
+            <a href="/stars/blackhole">🕳️ Black Hole</a>
+            <a href="/">← Home</a>
+        </nav>
+
+        <div class="stats" id="stats">Particles: 0 | FPS: 0</div>
+
+        <script>
+            import { Particle } from '../lib/particles';
+            import type { ParticleConfig } from '../lib/particles';
+
+            const PLAYGROUND_COLORS = [
+                'rgba(255, 255, 255, 0.9)',
+                'rgba(34, 211, 238, 0.9)',
+                'rgba(167, 139, 250, 0.9)',
+                'rgba(249, 115, 22, 0.7)',
+                'rgba(16, 185, 129, 0.7)',
+            ];
+
+            function playgroundConfig(canvas: HTMLCanvasElement): ParticleConfig {
+                return {
+                    canvasWidth: canvas.width,
+                    canvasHeight: canvas.height,
+                    maxSpeed: 0.8,
+                    maxRadius: 2.5,
+                    twinkleMaxSpeed: 0.08,
+                    mouseRange: 250,
+                    mouseForce: 0.0002,
+                    damping: 0.995,
+                    forceFalloff: true,
+                    fillOpacityFactor: 0.9,
+                    glowOpacityFactor: 0.4,
+                    glowRadiusMultiplier: 3,
+                    colors: PLAYGROUND_COLORS,
+                };
+            }
+            class StardustPlayground {
+                private canvas: HTMLCanvasElement;
+                private ctx: CanvasRenderingContext2D;
+                private particles: Particle[] = [];
+                private animationId: number = 0;
+                private mouseX: number = 0;
+                private mouseY: number = 0;
+                private showConnections: boolean = true;
+                private lastTime: number = 0;
+                private fps: number = 0;
+                private frameCount: number = 0;
+                private fpsUpdateTime: number = 0;
+
+                constructor(canvas: HTMLCanvasElement) {
+                    this.canvas = canvas;
+                    this.ctx = canvas.getContext("2d")!;
+                    this.resize();
+                    this.init();
+                    this.animate();
+                    this.setupControls();
+
+                    window.addEventListener("resize", () => this.resize());
+                    window.addEventListener("mousemove", (e) => {
+                        this.mouseX = e.clientX;
+                        this.mouseY = e.clientY;
+                    });
+
+                    // Click to add particles at cursor
+                    window.addEventListener("click", (e) => {
+                        for (let i = 0; i < 5; i++) {
+                            const p = new Particle(playgroundConfig(this.canvas));
+                            p.x = e.clientX + (Math.random() - 0.5) * 30;
+                            p.y = e.clientY + (Math.random() - 0.5) * 30;
+                            this.particles.push(p);
+                        }
+                    });
+                }
+
+                setupControls() {
+                    const connectionsBtn = document.getElementById(
+                        "connectionsBtn",
+                    ) as HTMLButtonElement;
+                    const addBtn = document.getElementById(
+                        "addBtn",
+                    ) as HTMLButtonElement;
+                    const clearBtn = document.getElementById(
+                        "clearBtn",
+                    ) as HTMLButtonElement;
+
+                    connectionsBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        this.showConnections = !this.showConnections;
+                        connectionsBtn.textContent = `Connections: ${this.showConnections ? "ON" : "OFF"}`;
+                        connectionsBtn.classList.toggle(
+                            "active",
+                            this.showConnections,
+                        );
+                    });
+
+                    addBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        for (let i = 0; i < 50; i++) {
+                            this.particles.push(
+                                new Particle(playgroundConfig(this.canvas)),
+                            );
+                        }
+                    });
+
+                    clearBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        this.particles = [];
+                    });
+
+                    connectionsBtn.classList.add("active");
+                }
+
+                resize() {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                }
+
+                init() {
+                    const particleCount = Math.min(
+                        200,
+                        Math.floor(
+                            (window.innerWidth * window.innerHeight) / 6000,
+                        ),
+                    );
+
+                    for (let i = 0; i < particleCount; i++) {
+                        this.particles.push(
+                            new Particle(playgroundConfig(this.canvas)),
+                        );
+                    }
+                }
+
+                animate(currentTime: number = 0) {
+                    // FPS calculation
+                    this.frameCount++;
+                    if (currentTime - this.fpsUpdateTime >= 1000) {
+                        this.fps = this.frameCount;
+                        this.frameCount = 0;
+                        this.fpsUpdateTime = currentTime;
+                    }
+
+                    this.ctx.fillStyle = "rgba(10, 10, 15, 0.15)";
+                    this.ctx.fillRect(
+                        0,
+                        0,
+                        this.canvas.width,
+                        this.canvas.height,
+                    );
+
+                    this.particles.forEach((particle, index) => {
+                        particle.update(this.mouseX, this.mouseY);
+                        particle.draw(this.ctx);
+
+                        // Connections
+                        if (this.showConnections) {
+                            for (
+                                let j = index + 1;
+                                j < this.particles.length;
+                                j++
+                            ) {
+                                const dx = particle.x - this.particles[j].x;
+                                const dy = particle.y - this.particles[j].y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                                if (distance < 120) {
+                                    this.ctx.beginPath();
+                                    this.ctx.strokeStyle = `rgba(167, 139, 250, ${0.2 * (1 - distance / 120)})`;
+                                    this.ctx.lineWidth = 0.5;
+                                    this.ctx.moveTo(particle.x, particle.y);
+                                    this.ctx.lineTo(
+                                        this.particles[j].x,
+                                        this.particles[j].y,
+                                    );
+                                    this.ctx.stroke();
+                                }
+                            }
+                        }
+                    });
+
+                    // Update stats
+                    document.getElementById("stats")!.textContent =
+                        `Particles: ${this.particles.length} | FPS: ${this.fps}`;
+
+                    this.animationId = requestAnimationFrame((t) =>
+                        this.animate(t),
+                    );
+                }
+            }
+
+
+
+            // Initialize
+            const canvas = document.getElementById(
+                "stardust-canvas",
+            ) as HTMLCanvasElement;
+            new StardustPlayground(canvas);
+        </script>
+    </body>
+</html>
