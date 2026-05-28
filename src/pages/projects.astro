@@ -38,22 +38,42 @@ import { meta, projects } from "../consts.ts";
             </div>
             <p class="text-muted mt-1">{proj.description}</p>
             <div class="mt-1 flex gap-2">
-              <a
-                href={proj.sourceHref}
-                target="_blank"
-                class={`btn btn-soft light-mode-subtle flex-1 ${!proj.sourceHref ? "btn-disabled" : ""}`}
-              >
-                <Github />
-                Source
-              </a>
-              <a
-                href={proj.liveHref}
-                target={proj.liveHref?.startsWith("/") ? "_self" : "_blank"}
-                class={`btn btn-soft btn-accent light-mode-subtle flex-1 ${!proj.liveHref ? "btn-disabled" : ""}`}
-              >
-                <Globe />
-                Live
-              </a>
+              {proj.sourceHref ? (
+                <a
+                  href={proj.sourceHref}
+                  target="_blank"
+                  class="btn btn-soft light-mode-subtle flex-1"
+                >
+                  <Github />
+                  Source
+                </a>
+              ) : (
+                <span
+                  class="btn btn-soft btn-disabled light-mode-subtle flex-1"
+                  aria-disabled="true"
+                >
+                  <Github />
+                  Source
+                </span>
+              )}
+              {proj.liveHref ? (
+                <a
+                  href={proj.liveHref}
+                  target={proj.liveHref.startsWith("/") ? "_self" : "_blank"}
+                  class="btn btn-soft btn-accent light-mode-subtle flex-1"
+                >
+                  <Globe />
+                  Live
+                </a>
+              ) : (
+                <span
+                  class="btn btn-soft btn-accent btn-disabled light-mode-subtle flex-1"
+                  aria-disabled="true"
+                >
+                  <Globe />
+                  Live
+                </span>
+              )}
             </div>
           </div>
         </div>

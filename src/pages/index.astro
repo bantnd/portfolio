@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { meta } from "../consts";
+import { about, meta } from "../consts";
 import StardustOverlay from "../components/StardustOverlay.astro";
 import HeroSection from "../components/HeroSection.astro";
 import TechStackSection from "../components/TechStackSection.astro";
@@ -8,11 +8,51 @@ import FeaturedProjects from "../components/FeaturedProjects.astro";
 import ExperienceSection from "../components/ExperienceSection.astro";
 import EducationSection from "../components/EducationSection.astro";
 import ContactSection from "../components/ContactSection.astro";
+
+const siteURL = Astro.site ?? new URL(Astro.url.origin);
+const profileURL = new URL("/", siteURL).toString();
+const profileImageURL = new URL(about.profilePic.src, siteURL).toString();
+const sameAs = about.links
+  .filter((link) => ["Github", "Linkedin"].includes(link.icon))
+  .map((link) => link.href);
+
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Ban Tran",
+  jobTitle: about.tagLine,
+  url: profileURL,
+  image: profileImageURL,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Ho Chi Minh City",
+    addressCountry: "VN",
+  },
+  knowsAbout: [
+    "Data Engineering",
+    "DataOps",
+    "DataOps-Sec",
+    "Apache Kafka",
+    "Apache Spark",
+    "Kubernetes",
+    "Cloud Security",
+    "Hashicorp Vault",
+    "Keycloak",
+    "PostgreSQL",
+    "Python",
+    "Go",
+  ],
+  sameAs,
+};
 ---
 
-<StardustOverlay duration={2500} />
-
 <Layout title={meta.about.title} description={meta.about.description}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(personJsonLd)}
+    ></script>
+  </Fragment>
+
+  <StardustOverlay duration={2500} />
   <HeroSection />
   <TechStackSection />
   <FeaturedProjects />

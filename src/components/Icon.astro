@@ -1,5 +1,13 @@
 ---
-import LucideIcon from './LucideIcon';
+import {
+  ArrowRight,
+  Briefcase,
+  FileText,
+  Github,
+  Linkedin,
+  Mail,
+  Send,
+} from "@lucide/astro";
 
 interface Props {
   name: string;
@@ -8,6 +16,18 @@ interface Props {
 }
 
 const { name, size = "1.25rem", class: className } = Astro.props;
+
+const iconMap = {
+  ArrowRight,
+  Briefcase,
+  FileText,
+  Github,
+  Linkedin,
+  Mail,
+  Send,
+};
+
+const IconComponent = iconMap[name as keyof typeof iconMap];
 ---
 
-<LucideIcon name={name} size={size} className={className} client:load />
+{IconComponent && <IconComponent size={size} class={className} />}

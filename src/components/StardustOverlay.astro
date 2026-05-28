@@ -1,4 +1,6 @@
 ---
+import { about } from "../consts";
+
 interface Props {
     duration?: number; // Duration in milliseconds before auto-dismiss
 }
@@ -11,7 +13,7 @@ const { duration = 2500 } = Astro.props;
     <canvas id="stardust-canvas"></canvas>
     <div class="stardust-content">
         <h1 class="stardust-title">Ban Tran</h1>
-        <p class="stardust-subtitle">DataOps-Sec / Full Stack Developer</p>
+        <p class="stardust-subtitle">{about.tagLine}</p>
         <p class="stardust-hint">Click or wait to continue...</p>
     </div>
 </div>

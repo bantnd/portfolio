@@ -1,11 +1,11 @@
 {
   "name": "bantnd",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "dev": "astro dev",
     "build": "bun --version && astro build",
-    "preview": "astro preview",
+    "preview": "go run server/main.go",
     "astro": "astro"
   },
   "dependencies": {

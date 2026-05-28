@@ -13,6 +13,7 @@ const {
 <html lang="en">
   <head>
     <BaseHead title={title} description={description} image={image} />
+    <slot name="head" />
   </head>
 
   <body class="flex min-h-svh flex-col overflow-x-hidden">

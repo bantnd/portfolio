@@ -1,9 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ContactForm from "../components/ContactForm.astro";
+import { meta } from "../consts";
 ---
 
-<Layout title="Contact" description="Get in touch with me">
+<Layout title={meta.contact.title} description={meta.contact.description}>
   <section class="mx-auto max-w-4xl">
     <div class="mb-8">
       <p class="mb-2 text-sm uppercase tracking-wider text-accent">Let's talk</p>
@@ -12,7 +13,7 @@ import ContactForm from "../components/ContactForm.astro";
         Have a question or a project in mind? Feel free to reach out.
       </p>
       <p class="text-base text-muted">
-        <span class="font-medium">Location:</span> VietNam, Ho Chi Minh City
+        <span class="font-medium">Location:</span> Ho Chi Minh City, Vietnam
       </p>
     </div>
 

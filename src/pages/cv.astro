@@ -3,7 +3,9 @@ import { about, projects, meta } from "../consts";
 import { Mail, MapPin, Globe, Printer } from "lucide-react";
 import linkedinIcon from "../assets/icons/linkedin.svg";
 
-const { title } = meta.about;
+const siteUrl = (Astro.site ?? new URL(Astro.url.origin)).toString().replace(/\/$/, "");
+const cvUrl = `${siteUrl}/cv/`;
+const siteHost = new URL(siteUrl).hostname;
 ---
 
 <!doctype html>
@@ -12,7 +14,15 @@ const { title } = meta.about;
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>CV - Ban Tran</title>
-        <meta name="description" content={`Curriculum Vitae of ${title}`} />
+        <meta name="description" content={meta.cv.description} />
+        <link rel="canonical" href={cvUrl} />
+        <meta property="og:type" content="profile" />
+        <meta property="og:url" content={cvUrl} />
+        <meta property="og:title" content={meta.cv.title} />
+        <meta property="og:description" content={meta.cv.description} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={meta.cv.title} />
+        <meta name="twitter:description" content={meta.cv.description} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -156,12 +166,12 @@ const { title } = meta.about;
                         })
                     }
                     <a
-                        href="https://bantnd.vercel.app"
+                        href={siteUrl}
                         target="_blank"
                         class="flex items-center gap-1.5 hover:text-emerald-600"
                     >
                         <Globe size="0.875rem" />
-                        <span>bantnd.vercel.app</span>
+                        <span>{siteHost}</span>
                     </a>
                     <span class="flex items-center gap-1.5">
                         <MapPin size="0.875rem" />

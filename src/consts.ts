@@ -20,19 +20,29 @@ import MaterializeIcon from "./assets/icons/materialize.svg";
 export const meta = {
   about: {
     // index page
-    title: "Ban Tran",
+    title: "Ban Tran — DataOps-Sec / Lead Data Engineer",
     description:
-      "Hi, I'm Ban Tran, a Computer Scientist and DataOps-Sec / Full Stack Developer. Welcome to my little corner of the internet!",
+      "Ban Tran is a DataOps-Sec and Lead Data Engineer in Ho Chi Minh City, Vietnam, focused on Kafka, Spark, Kubernetes, Vault, Keycloak, and enterprise data platforms.",
   },
   projects: {
     title: "Projects | Ban Tran",
     description:
-      "Here are some of my projects — things I’ve built, experimented with, and had fun creating.",
+      "Selected data engineering, DataOps-Sec, Kubernetes, streaming, and cloud-native security projects by Ban Tran.",
   },
   blog: {
     title: "Blog | Ban Tran",
     description:
-      "This is my blog — a place where I share thoughts, ideas, and things I’m learning along the way.",
+      "Technical notes and articles from Ban Tran on data engineering, DataOps-Sec, Kafka, Kubernetes, and cloud-native systems.",
+  },
+  contact: {
+    title: "Contact | Ban Tran",
+    description:
+      "Contact Ban Tran, DataOps-Sec and Lead Data Engineer based in Ho Chi Minh City, Vietnam.",
+  },
+  cv: {
+    title: "CV | Ban Tran",
+    description:
+      "Curriculum vitae of Ban Tran, DataOps-Sec and Lead Data Engineer in Ho Chi Minh City, Vietnam.",
   },
   // blog post title and description are taken from the variables in markdown file
 };
@@ -63,7 +73,7 @@ export const about: About = {
     {
       icon: "Linkedin",
       iconUrl: LinkedinIcon.src,
-      href: "https://www.linkedin.com/in/ban-tran/"
+      href: "https://www.linkedin.com/in/bantnd/"
     },
     {
       icon: "Telegram",
@@ -188,7 +198,7 @@ export const projects: Project[] = [
     description:
       "Designed and implemented enterprise security architecture with centralized secrets management, SSO/OpenID authentication, and API gateway with WAF protection.",
     sourceHref: "",
-    liveHref: "",
+    liveHref: "/projects/zero-trust-soc",
   },
   {
     logoImage: Kubernetes,
@@ -197,7 +207,7 @@ export const projects: Project[] = [
     description:
       "Migrated legacy applications to HA Kubernetes clusters. Implemented complete CI/CD pipelines, monitoring stack, and automated deployment workflows.",
     sourceHref: "",
-    liveHref: "",
+    liveHref: "/projects/kubernetes-cluster",
   },
   {
     logoImage: AvifLogo,
