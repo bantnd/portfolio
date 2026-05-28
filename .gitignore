@@ -9,7 +9,7 @@ node_modules/
 # lock files
 package-lock.json
 yarn.lock
-bun.lock
+# bun.lock
 
 # logs
 npm-debug.log*
