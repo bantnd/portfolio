@@ -83,8 +83,7 @@ func main() {
 
 	// Static files
 	staticDir := getEnv("STATIC_DIR", "./dist")
-	fileServer := http.FileServer(http.Dir(staticDir))
-	mux.Handle("/", spaHandler(staticDir, fileServer))
+	mux.Handle("/", spaHandler(staticDir))
 
 	// Keep-alive for Render.com free tier (spins down after 15m of no inbound traffic).
 	// Must ping the PUBLIC URL so the request passes through Render's router.
@@ -126,13 +125,13 @@ func main() {
 }
 
 // spaHandler serves static files; falls back to index.html for SPA routes
-func spaHandler(root string, next http.Handler) http.Handler {
+func spaHandler(root string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 
 		// Helper to serve text/config files with localhost replacements
 		serveStatic := func(filePath string) {
-			if strings.HasSuffix(filePath, ".html") || strings.HasSuffix(filePath, ".xml") || strings.HasSuffix(filePath, ".txt") || strings.HasSuffix(filePath, ".json") {
+			if strings.HasSuffix(filePath, ".html") || strings.HasSuffix(filePath, ".xml") || strings.HasSuffix(filePath, ".txt") || strings.HasSuffix(filePath, ".json") || strings.HasSuffix(filePath, ".md") {
 				serveFileWithReplacements(w, r, filePath)
 			} else {
 				http.ServeFile(w, r, filePath)
@@ -450,6 +449,8 @@ func serveFileWithReplacements(w http.ResponseWriter, r *http.Request, filePath 
 		contentType = "application/json; charset=utf-8"
 	} else if strings.HasSuffix(filePath, ".txt") {
 		contentType = "text/plain; charset=utf-8"
+	} else if strings.HasSuffix(filePath, ".md") {
+		contentType = "text/markdown; charset=utf-8"
 	}
 
 	if contentType != "" {
