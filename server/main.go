@@ -130,9 +130,18 @@ func spaHandler(root string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 
+		// Helper to serve text/config files with localhost replacements
+		serveStatic := func(filePath string) {
+			if strings.HasSuffix(filePath, ".html") || strings.HasSuffix(filePath, ".xml") || strings.HasSuffix(filePath, ".txt") || strings.HasSuffix(filePath, ".json") {
+				serveFileWithReplacements(w, r, filePath)
+			} else {
+				http.ServeFile(w, r, filePath)
+			}
+		}
+
 		// Root path
 		if path == "/" {
-			http.ServeFile(w, r, root+"/index.html")
+			serveStatic(root + "/index.html")
 			return
 		}
 
@@ -142,19 +151,19 @@ func spaHandler(root string, next http.Handler) http.Handler {
 
 		// Try as directory with index.html (handles /projects/ and /projects)
 		if _, err := fs.Stat(os.DirFS(root), clean+"/index.html"); err == nil {
-			http.ServeFile(w, r, root+"/"+clean+"/index.html")
+			serveStatic(root + "/" + clean + "/index.html")
 			return
 		}
 
 		// Try exact file (for assets like .css, .js, images)
 		if info, err := fs.Stat(os.DirFS(root), clean); err == nil && !info.IsDir() {
-			next.ServeHTTP(w, r)
+			serveStatic(root + "/" + clean)
 			return
 		}
 
 		// Try path.html
 		if _, err := fs.Stat(os.DirFS(root), clean+".html"); err == nil {
-			http.ServeFile(w, r, root+"/"+clean+".html")
+			serveStatic(root + "/" + clean + ".html")
 			return
 		}
 
@@ -162,7 +171,7 @@ func spaHandler(root string, next http.Handler) http.Handler {
 		w.WriteHeader(http.StatusNotFound)
 		// Try serving custom 404 page
 		if _, err := fs.Stat(os.DirFS(root), "404.html"); err == nil {
-			http.ServeFile(w, r, root+"/404.html")
+			serveStatic(root + "/404.html")
 			return
 		}
 		fmt.Fprint(w, "404 Not Found")
@@ -408,6 +417,47 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"imageConverterApiUrl": converterURL,
 	})
+}
+
+func serveFileWithReplacements(w http.ResponseWriter, r *http.Request, filePath string) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	// Determine runtime target URL (prioritize RENDER_EXTERNAL_URL, fallback to Host header)
+	targetURL := os.Getenv("RENDER_EXTERNAL_URL")
+	if targetURL == "" {
+		scheme := "http"
+		if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+			scheme = "https"
+		}
+		targetURL = scheme + "://" + r.Host
+	}
+	targetURL = strings.TrimSuffix(targetURL, "/")
+
+	// Replace localhost with production URL in text/config files
+	content = bytes.ReplaceAll(content, []byte("http://localhost:4321"), []byte(targetURL))
+
+	// Detect and set correct Content-Type header
+	var contentType string
+	if strings.HasSuffix(filePath, ".html") {
+		contentType = "text/html; charset=utf-8"
+	} else if strings.HasSuffix(filePath, ".xml") {
+		contentType = "application/xml; charset=utf-8"
+	} else if strings.HasSuffix(filePath, ".json") {
+		contentType = "application/json; charset=utf-8"
+	} else if strings.HasSuffix(filePath, ".txt") {
+		contentType = "text/plain; charset=utf-8"
+	}
+
+	if contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(content)
 }
 
 func getEnv(key, fallback string) string {
