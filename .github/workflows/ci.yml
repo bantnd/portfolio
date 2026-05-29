@@ -46,6 +46,7 @@ jobs:
             type=ref,event=tag
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v6
         with:
           provenance: mode=max
@@ -56,3 +57,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Trigger Render deploy hook
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: |
+          IMAGE_URL="ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}"
+          ENCODED=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$IMAGE_URL")
+          curl --silent --show-error --fail \
+            "${{ secrets.RENDER_DEPLOY_HOOK_URL }}&imgURL=${ENCODED}"
