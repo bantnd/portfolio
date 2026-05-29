@@ -183,6 +183,78 @@ import { ArrowLeft } from "@lucide/astro";
   </div>
 
   <script>
+    const escapeHTML = (value) =>
+      String(value ?? "").replace(
+        /[&<>"']/g,
+        (char) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[char] || char,
+      );
+
+    const normalizeConnector = ([name, connector]) => {
+      const record =
+        connector && typeof connector === "object" ? connector : {};
+
+      return {
+        name: String(name),
+        state: String(record.state || "UNKNOWN").trim().toUpperCase(),
+        type: String(record.type || "unknown").trim().toLowerCase(),
+      };
+    };
+
+    const statePriority = (state) => {
+      if (state === "RUNNING") return 0;
+      if (state === "PAUSED") return 1;
+      return 2;
+    };
+
+    const stateTone = (state) => {
+      if (state === "RUNNING") {
+        return {
+          dot: "bg-green-400",
+          text: "text-green-400",
+          border: "border-green-500/25",
+          bg: "bg-green-500/10",
+        };
+      }
+      if (state === "PAUSED") {
+        return {
+          dot: "bg-yellow-400",
+          text: "text-yellow-400",
+          border: "border-yellow-500/25",
+          bg: "bg-yellow-500/10",
+        };
+      }
+      return {
+        dot: "bg-red-400",
+        text: "text-red-400",
+        border: "border-red-500/25",
+        bg: "bg-red-500/10",
+      };
+    };
+
+    const countBy = (items, key) =>
+      items.reduce((counts, item) => {
+        const value = item[key] || "unknown";
+        counts[value] = (counts[value] || 0) + 1;
+        return counts;
+      }, {});
+
+    const formatPercent = (count, total) =>
+      total === 0 ? "0" : ((count / total) * 100).toFixed(1).replace(".0", "");
+
+    const renderTypeMetric = (label, count) => `
+      <div class="rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
+        <p class="text-sm text-muted">${label}</p>
+        <p class="mt-2 text-3xl font-bold text-accent">${count}</p>
+      </div>
+    `;
+
     async function fetchConnectorStatus() {
       const statusContainer = document.getElementById("statusContainer");
       const errorContainer = document.getElementById("errorContainer");
@@ -248,14 +320,13 @@ import { ArrowLeft } from "@lucide/astro";
 
         const connectors = await response.json();
 
-        // Sort connectors: RUNNING first, then others
-        const sortedConnectors = Object.entries(connectors).sort(
-          ([, a]: any, [, b]: any) => {
-            if (a.state === "RUNNING" && b.state !== "RUNNING") return -1;
-            if (a.state !== "RUNNING" && b.state === "RUNNING") return 1;
-            return 0;
-          },
-        );
+        const sortedConnectors = Object.entries(connectors || {})
+          .map(normalizeConnector)
+          .sort((a, b) => {
+            const stateDiff = statePriority(a.state) - statePriority(b.state);
+            if (stateDiff !== 0) return stateDiff;
+            return a.name.localeCompare(b.name);
+          });
 
         // Display connectors
         if (sortedConnectors.length === 0) {
@@ -266,63 +337,161 @@ import { ArrowLeft } from "@lucide/astro";
           `;
         } else {
           const runningCount = sortedConnectors.filter(
-            ([, c]: any) => c.state === "RUNNING",
+            (connector) => connector.state === "RUNNING",
           ).length;
           const totalCount = sortedConnectors.length;
+          const sourceCount = sortedConnectors.filter(
+            (connector) => connector.type === "source",
+          ).length;
+          const sinkCount = sortedConnectors.filter(
+            (connector) => connector.type === "sink",
+          ).length;
+          const stateCounts = countBy(sortedConnectors, "state");
+          const typeCounts = countBy(sortedConnectors, "type");
+          const lastChecked = new Intl.DateTimeFormat(undefined, {
+            dateStyle: "medium",
+            timeStyle: "medium",
+          }).format(new Date());
+          const allHealthy = runningCount === totalCount;
+          const stateRows = Object.entries(stateCounts).sort(
+            ([stateA], [stateB]) => statePriority(stateA) - statePriority(stateB),
+          );
+          const typeRows = Object.entries(typeCounts).sort(
+            ([typeA], [typeB]) => typeA.localeCompare(typeB),
+          );
 
           statusContainer.innerHTML = `
-            <div class="mb-4 rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
-              <div class="flex items-center justify-between">
+            <div class="rounded-xl border border-white/20 bg-white/10 p-6 backdrop-blur-xl">
+              <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p class="text-sm text-muted">System Status</p>
-                  <p class="text-2xl font-bold">
+                  <p class="text-sm uppercase tracking-wide text-muted">System Status</p>
+                  <p class="mt-2 text-2xl font-bold md:text-3xl">
                     ${
-                      runningCount === totalCount
+                      allHealthy
                         ? '<span class="text-green-400">All Systems Operational</span>'
-                        : '<span class="text-yellow-400">Some Issues Detected</span>'
+                        : '<span class="text-yellow-400">Attention Required</span>'
                     }
                   </p>
+                  <p class="mt-2 text-sm text-muted">Last checked: ${escapeHTML(lastChecked)}</p>
                 </div>
-                <div class="text-right">
-                  <p class="text-3xl font-bold text-accent">${runningCount}/${totalCount}</p>
-                  <p class="text-sm text-muted">Connectors Running</p>
+                <div class="md:text-right">
+                  <p class="text-4xl font-bold text-accent">${runningCount}/${totalCount}</p>
+                  <p class="text-sm text-muted">running connectors</p>
                 </div>
               </div>
             </div>
-            
-            <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              ${sortedConnectors
-                .map(([name, connector]: any) => {
-                  const isRunning = connector.state === "RUNNING";
-                  const stateColor = isRunning
-                    ? "text-green-400"
-                    : "text-red-400";
-                  const borderColor = isRunning
-                    ? "border-green-500/20"
-                    : "border-red-500/20";
-                  const bgColor = isRunning ? "bg-green-500/5" : "bg-red-500/5";
 
-                  return `
-                  <div class="rounded-xl border ${borderColor} ${bgColor} p-4 backdrop-blur-xl">
-                    <div class="mb-2 flex items-start justify-between">
-                      <div class="flex items-center gap-2">
-                        <div class="h-2 w-2 rounded-full ${isRunning ? "bg-green-400" : "bg-red-400"} animate-pulse"></div>
-                        <span class="text-xs uppercase tracking-wider ${stateColor} font-semibold">
-                          ${connector.state}
-                        </span>
-                      </div>
-                      <span class="rounded bg-white/10 px-2 py-1 text-xs text-muted">
-                        ${connector.type}
-                      </span>
-                    </div>
-                    <p class="text-sm font-medium break-all">
-                      ${name}
-                    </p>
-                  </div>
-                `;
-                })
-                .join("")}
+            <div class="grid gap-3 md:grid-cols-4">
+              ${renderTypeMetric("Total connectors", totalCount)}
+              ${renderTypeMetric("Source connectors", sourceCount)}
+              ${renderTypeMetric("Sink connectors", sinkCount)}
+              ${renderTypeMetric("Non-running", totalCount - runningCount)}
             </div>
+
+            <div class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+              <div class="rounded-xl border border-white/20 bg-white/10 p-5 backdrop-blur-xl">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-sm uppercase tracking-wide text-muted">State Distribution</p>
+                    <p class="mt-1 text-lg font-semibold">Kafka Connect health</p>
+                  </div>
+                  <span class="rounded bg-white/10 px-3 py-1 text-sm text-muted">${formatPercent(runningCount, totalCount)}% running</span>
+                </div>
+                <div class="space-y-4">
+                  ${stateRows
+                    .map(([state, count]) => {
+                      const tone = stateTone(state);
+                      const percent = formatPercent(count, totalCount);
+
+                      return `
+                        <div>
+                          <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+                            <div class="flex items-center gap-2">
+                              <span class="h-2.5 w-2.5 rounded-full ${tone.dot}"></span>
+                              <span class="font-semibold ${tone.text}">${escapeHTML(state)}</span>
+                            </div>
+                            <span class="text-muted">${count} (${percent}%)</span>
+                          </div>
+                          <div class="h-2 overflow-hidden rounded-full bg-white/10">
+                            <div class="h-full rounded-full ${tone.dot}" style="width: ${percent}%"></div>
+                          </div>
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-white/20 bg-white/10 p-5 backdrop-blur-xl">
+                <p class="text-sm uppercase tracking-wide text-muted">Connector Mix</p>
+                <div class="mt-4 space-y-3">
+                  ${typeRows
+                    .map(([type, count]) => {
+                      const percent = formatPercent(count, totalCount);
+
+                      return `
+                        <div class="rounded-lg border border-white/10 bg-white/5 p-3">
+                          <div class="mb-2 flex items-center justify-between gap-3">
+                            <span class="font-semibold capitalize">${escapeHTML(type)}</span>
+                            <span class="text-sm text-muted">${count} (${percent}%)</span>
+                          </div>
+                          <div class="h-2 overflow-hidden rounded-full bg-white/10">
+                            <div class="h-full rounded-full bg-accent" style="width: ${percent}%"></div>
+                          </div>
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+            </div>
+
+            <details class="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl">
+              <summary class="cursor-pointer list-none p-5">
+                <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p class="text-sm uppercase tracking-wide text-muted">Anonymized Connector Inventory</p>
+                    <p class="mt-1 font-semibold">Encrypted IDs are available for audit-style review</p>
+                  </div>
+                  <span class="text-sm text-accent">View table</span>
+                </div>
+              </summary>
+              <div class="border-t border-white/10 p-5">
+                <div class="max-h-96 overflow-auto rounded-lg border border-white/10">
+                  <table class="w-full min-w-[34rem] text-left text-sm">
+                    <thead class="sticky top-0 bg-base-100/95 text-xs uppercase tracking-wide text-muted backdrop-blur">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">Encrypted ID</th>
+                        <th class="px-4 py-3 font-semibold">Type</th>
+                        <th class="px-4 py-3 font-semibold">State</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                      ${sortedConnectors
+                        .map((connector) => {
+                          const tone = stateTone(connector.state);
+
+                          return `
+                            <tr class="hover:bg-white/5">
+                              <td class="px-4 py-3 font-mono text-xs md:text-sm">${escapeHTML(connector.name)}</td>
+                              <td class="px-4 py-3">
+                                <span class="rounded bg-white/10 px-2 py-1 text-xs text-muted">${escapeHTML(connector.type)}</span>
+                              </td>
+                              <td class="px-4 py-3">
+                                <span class="inline-flex items-center gap-2 rounded-full border ${tone.border} ${tone.bg} px-2.5 py-1 text-xs font-semibold ${tone.text}">
+                                  <span class="h-2 w-2 rounded-full ${tone.dot}"></span>
+                                  ${escapeHTML(connector.state)}
+                                </span>
+                              </td>
+                            </tr>
+                          `;
+                        })
+                        .join("")}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </details>
           `;
         }
       } catch (error) {
