@@ -16,6 +16,7 @@ import LokiIcon from "./assets/icons/loki.svg";
 import ApisixIcon from "./assets/icons/apisix.svg";
 import LonghornIcon from "./assets/icons/longhorn.svg";
 import MaterializeIcon from "./assets/icons/materialize.svg";
+import PowerBIIcon from "./assets/icons/PowerBI.svg";
 
 export const meta = {
   about: {
@@ -156,7 +157,7 @@ export const about: About = {
       { name: "Azure", icon: AzureIcon.src },
       { name: "Hashicorp Vault", icon: "https://cdn.simpleicons.org/vault" },
       { name: "Keycloak", icon: "https://cdn.simpleicons.org/keycloak" },
-      { name: "Power BI", icon: "https://cdn.simpleicons.org/powerbi" },
+      { name: "Power BI", icon: PowerBIIcon.src },
       { name: "Redis", icon: "https://cdn.simpleicons.org/redis" },
       { name: "MySQL", icon: "https://cdn.simpleicons.org/mysql" },
       { name: "Supabase", icon: "https://cdn.simpleicons.org/supabase" },
