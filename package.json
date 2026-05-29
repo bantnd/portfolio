@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "astro dev",
     "build": "bun --version && astro build",
-    "preview": "go run server/main.go",
-    "astro": "astro"
+    "start": "go run server/main.go",
+    "start:local": "bun --env-file=.env run start",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.12",

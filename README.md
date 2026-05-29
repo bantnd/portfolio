@@ -36,17 +36,20 @@ http://localhost:4321
 bun run build
 ```
 
-2. Preview the production build locally:
+2. Run the Go server locally with `.env` loaded:
 
 ```bash
-bun run preview
+bun run start:local
 ```
 
 ## Available Scripts
 
 - `bun run dev`: Start Astro development server.
 - `bun run build`: Build production output.
-- `bun run preview`: Preview production output.
+- `bun run start`: Serve the built `dist` directory with the Go server.
+- `bun run start:local`: Serve the built site with local `.env` values loaded.
+- `bun run format`: Format the codebase with Prettier.
+- `bun run format:check`: Check formatting without writing changes.
 
 ## Customization
 
