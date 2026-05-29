@@ -1,0 +1,13 @@
+{
+  "experimentalServices": {
+    "web": {
+      "entrypoint": ".",
+      "framework": "astro",
+      "routePrefix": "/"
+    },
+    "api": {
+      "entrypoint": "server",
+      "routePrefix": "/api"
+    }
+  }
+}

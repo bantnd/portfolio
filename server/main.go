@@ -75,15 +75,26 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// API routes
-	mux.HandleFunc("/api/health", handleHealth)
-	mux.HandleFunc("/api/contact", handleContact)
-	mux.HandleFunc("/api/connectors", handleConnectors)
-	mux.HandleFunc("/api/config", handleConfig)
+	// On Vercel Services the routePrefix "/api" is stripped before the request
+	// reaches this binary, so handlers must be registered without it.
+	// On Render (and local dev) the binary serves everything, so we keep /api/*.
+	apiPrefix := "/api"
+	if os.Getenv("VERCEL") != "" {
+		apiPrefix = ""
+	}
 
-	// Static files
-	staticDir := getEnv("STATIC_DIR", "./dist")
-	mux.Handle("/", spaHandler(staticDir))
+	// API routes
+	mux.HandleFunc(apiPrefix+"/health", handleHealth)
+	mux.HandleFunc(apiPrefix+"/contact", handleContact)
+	mux.HandleFunc(apiPrefix+"/connectors", handleConnectors)
+	mux.HandleFunc(apiPrefix+"/config", handleConfig)
+
+	// Static files — only needed when running standalone (Render / local dev).
+	// On Vercel the "web" service serves all static assets.
+	if os.Getenv("VERCEL") == "" {
+		staticDir := getEnv("STATIC_DIR", "./dist")
+		mux.Handle("/", spaHandler(staticDir))
+	}
 
 	// Keep-alive for Render.com free tier (spins down after 15m of no inbound traffic).
 	// Must ping the PUBLIC URL so the request passes through Render's router.
@@ -118,7 +129,7 @@ func main() {
 	}
 
 	addr := ":" + port
-	log.Printf("Serving on %s (static: %s)", addr, staticDir)
+	log.Printf("Serving on %s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
 	}
