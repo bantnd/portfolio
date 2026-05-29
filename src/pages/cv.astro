@@ -143,7 +143,7 @@ const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
                                             alt="LinkedIn"
                                             class="h-3.5 w-3.5"
                                         />
-                                        <span>linkedin.com/in/ban-tran</span>
+                                        <span>{link.href.replace(/^https?:\/\/(?:www\.)?/, "").replace(/\/$/, "")}</span>
                                     </a>
                                 );
                             }
@@ -159,7 +159,7 @@ const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
                                             alt="GitHub"
                                             class="h-3.5 w-3.5"
                                         />
-                                        <span>github.com/bantnd</span>
+                                        <span>{link.href.replace(/^https?:\/\/(?:www\.)?/, "").replace(/\/$/, "")}</span>
                                     </a>
                                 );
                             }
