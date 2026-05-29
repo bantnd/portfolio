@@ -449,6 +449,9 @@ func serveFileWithReplacements(w http.ResponseWriter, r *http.Request, filePath 
 
 	// Replace localhost with production URL in text/config files
 	content = bytes.ReplaceAll(content, []byte("http://localhost:4321"), []byte(targetURL))
+	// Also replace bare hostname:port used as display text (e.g. CV page link)
+	targetHost := strings.TrimPrefix(strings.TrimPrefix(targetURL, "https://"), "http://")
+	content = bytes.ReplaceAll(content, []byte("localhost:4321"), []byte(targetHost))
 
 	// Detect and set correct Content-Type header
 	var contentType string

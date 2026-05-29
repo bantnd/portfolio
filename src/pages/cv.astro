@@ -5,7 +5,7 @@ import linkedinIcon from "../assets/icons/linkedin.svg";
 
 const siteUrl = (Astro.site ?? new URL(Astro.url.origin)).toString().replace(/\/$/, "");
 const cvUrl = `${siteUrl}/cv/`;
-const siteHost = new URL(siteUrl).hostname;
+const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
 ---
 
 <!doctype html>
@@ -171,7 +171,7 @@ const siteHost = new URL(siteUrl).hostname;
                         class="flex items-center gap-1.5 hover:text-emerald-600"
                     >
                         <Globe size="0.875rem" />
-                        <span>{siteHost}</span>
+                        <span>{siteDisplay}</span>
                     </a>
                     <span class="flex items-center gap-1.5">
                         <MapPin size="0.875rem" />
