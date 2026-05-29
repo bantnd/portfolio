@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "astro dev",
     "build": "bun --version && astro build",
+    "check": "astro check",
     "start": "go run server/main.go",
     "start:local": "bun --env-file=.env run start",
+    "lint": "bun run check",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -28,9 +30,11 @@
     "three": "^0.182.0"
   },
   "devDependencies": {
+    "@astrojs/check": "0.9.9",
     "@tailwindcss/typography": "^0.5.19",
     "prettier": "^3.7.4",
     "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.7.2"
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "typescript": "6.0.3"
   }
 }

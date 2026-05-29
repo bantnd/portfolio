@@ -13,6 +13,11 @@ const staticRoutes = [
   "/cv/",
 ];
 
+type SitemapURL = {
+  loc: string;
+  lastmod?: string;
+};
+
 const escapeXml = (value: string) =>
   value
     .replaceAll("&", "&amp;")
@@ -25,7 +30,7 @@ export const GET: APIRoute = async ({ site, url }) => {
   const siteURL = site ?? new URL(url.origin);
   const posts = await getCollection("blog");
 
-  const urls = [
+  const urls: SitemapURL[] = [
     ...staticRoutes.map((path) => ({ loc: new URL(path, siteURL).toString() })),
     ...posts.map((post) => ({
       loc: new URL(`/blog/${post.id}/`, siteURL).toString(),

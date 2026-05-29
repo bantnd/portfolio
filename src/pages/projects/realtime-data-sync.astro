@@ -183,7 +183,25 @@ import { ArrowLeft } from "@lucide/astro";
   </div>
 
   <script>
-    const escapeHTML = (value) =>
+    type ConnectorRecord = {
+      state?: unknown;
+      type?: unknown;
+    };
+
+    type NormalizedConnector = {
+      name: string;
+      state: string;
+      type: string;
+    };
+
+    type StateTone = {
+      dot: string;
+      text: string;
+      border: string;
+      bg: string;
+    };
+
+    const escapeHTML = (value: unknown): string =>
       String(value ?? "").replace(
         /[&<>"']/g,
         (char) =>
@@ -196,9 +214,14 @@ import { ArrowLeft } from "@lucide/astro";
           })[char] || char,
       );
 
-    const normalizeConnector = ([name, connector]) => {
+    const normalizeConnector = ([
+      name,
+      connector,
+    ]: [string, unknown]): NormalizedConnector => {
       const record =
-        connector && typeof connector === "object" ? connector : {};
+        connector && typeof connector === "object"
+          ? (connector as ConnectorRecord)
+          : {};
 
       return {
         name: String(name),
@@ -207,13 +230,13 @@ import { ArrowLeft } from "@lucide/astro";
       };
     };
 
-    const statePriority = (state) => {
+    const statePriority = (state: string): number => {
       if (state === "RUNNING") return 0;
       if (state === "PAUSED") return 1;
       return 2;
     };
 
-    const stateTone = (state) => {
+    const stateTone = (state: string): StateTone => {
       if (state === "RUNNING") {
         return {
           dot: "bg-green-400",
@@ -238,17 +261,20 @@ import { ArrowLeft } from "@lucide/astro";
       };
     };
 
-    const countBy = (items, key) =>
-      items.reduce((counts, item) => {
+    const countBy = (
+      items: NormalizedConnector[],
+      key: "state" | "type",
+    ): Record<string, number> =>
+      items.reduce<Record<string, number>>((counts, item) => {
         const value = item[key] || "unknown";
         counts[value] = (counts[value] || 0) + 1;
         return counts;
       }, {});
 
-    const formatPercent = (count, total) =>
+    const formatPercent = (count: number, total: number): string =>
       total === 0 ? "0" : ((count / total) * 100).toFixed(1).replace(".0", "");
 
-    const renderTypeMetric = (label, count) => `
+    const renderTypeMetric = (label: string, count: number): string => `
       <div class="rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
         <p class="text-sm text-muted">${label}</p>
         <p class="mt-2 text-3xl font-bold text-accent">${count}</p>
@@ -318,7 +344,10 @@ import { ArrowLeft } from "@lucide/astro";
           throw new Error(err.error || `API returned status ${response.status}`);
         }
 
-        const connectors = await response.json();
+        const connectors = (await response.json()) as Record<
+          string,
+          ConnectorRecord
+        >;
 
         const sortedConnectors = Object.entries(connectors || {})
           .map(normalizeConnector)
