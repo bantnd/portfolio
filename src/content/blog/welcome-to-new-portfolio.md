@@ -10,4 +10,4 @@ For styling, I’m using [DaisyUI](https://daisyui.com/) and [Tailwind CSS](http
 
 Although I’ve had portfolios before, I’ve never created one from the ground up with my own ideas.
 
-👉 You can check out the source code here: [GitHub Repository](https://github.com/bantnd/vercel-portfolio)
+👉 You can check out the source code here: [GitHub Repository](https://github.com/bantnd/portfolio)
