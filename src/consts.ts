@@ -8,14 +8,14 @@ import ZeroTrust from "./assets/projects/ZeroTrust.png";
 import Kubernetes from "./assets/projects/Kubernetes.svg";
 import AvifLogo from "./assets/projects/Avif-logo-rgb.svg";
 import MSSQLIcon from "./assets/icons/mssql.svg";
-import BytebaseIcon from "./assets/icons/bytebase.svg";
+// import BytebaseIcon from "./assets/icons/bytebase.svg";
 import LinkedinIcon from "./assets/icons/linkedin.svg";
 import AzureIcon from "./assets/icons/Azure.svg";
-import FabricIcon from "./assets/icons/fabric.svg";
-import LokiIcon from "./assets/icons/loki.svg";
+// import FabricIcon from "./assets/icons/fabric.svg";
+// import LokiIcon from "./assets/icons/loki.svg";
 import ApisixIcon from "./assets/icons/apisix.svg";
-import LonghornIcon from "./assets/icons/longhorn.svg";
-import MaterializeIcon from "./assets/icons/materialize.svg";
+// import LonghornIcon from "./assets/icons/longhorn.svg";
+// import MaterializeIcon from "./assets/icons/materialize.svg";
 import PowerBIIcon from "./assets/icons/PowerBI.svg";
 
 export const meta = {
