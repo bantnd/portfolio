@@ -1,4 +1,10 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "build": {
+    "env": {
+      "GO_BUILD_FLAGS": "-ldflags '-s -w'"
+    }
+  },
   "experimentalServices": {
     "web": {
       "entrypoint": ".",
@@ -7,6 +13,7 @@
     },
     "api": {
       "entrypoint": "server",
+      "framework": "go",
       "routePrefix": "/api"
     }
   }
