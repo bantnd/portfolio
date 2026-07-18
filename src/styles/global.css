@@ -223,3 +223,28 @@
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
 }
+
+/* Mermaid Diagram Centering, Responsiveness, and Styling */
+.mermaid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.mermaid svg {
+  display: block;
+  flex: 0 0 auto;
+  margin-inline: auto;
+  height: auto;
+}
+
+.mermaid .flowchart-link {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mermaid marker path {
+  stroke-linejoin: round;
+}

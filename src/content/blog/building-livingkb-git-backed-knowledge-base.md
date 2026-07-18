@@ -17,59 +17,67 @@ In this post, I'll dive into the architecture, design choices, and technical cha
 LivingKB is packaged as a single, lightweight Docker container containing a compiled **Go 1.22+ backend** and a built **Svelte 5 + Vite TypeScript SPA**. PostgreSQL serves as my metadata, draft, and permission registry, while a local or remote Git repository serves as the single source of truth for approved document snapshots.
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
 flowchart TD
     %% Styling Definitions
     classDef client fill:#0f172a,stroke:#38bdf8,stroke-width:1px,color:#38bdf8;
     classDef server fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#fff;
     classDef service fill:#1e293b,stroke:#475569,stroke-width:1px,color:#cbd5e1;
     classDef storage fill:#1e1b4b,stroke:#6366f1,stroke-width:1.5px,color:#e0e7ff;
-    
+
     subgraph Clients ["Clients"]
         direction LR
-        Web["Web Browser<br>(Svelte 5 SPA)"]:::client
         MCP["MCP Client<br>(AI Agent)"]:::client
+        Web["Web Browser<br>(Svelte 5 SPA)"]:::client
         API["API Consumer<br>(Scripts/CI)"]:::client
     end
 
     subgraph GoServer ["Go API Server"]
         Router["Gin HTTP Router & Middleware"]:::server
         
-        subgraph CoreServices ["Core Service Layer"]
+        subgraph CoreServices ["Core Services"]
             direction LR
+            Asset["Asset Handler"]:::service
             Auth["Auth & Policy"]:::service
             Page["Page & Draft"]:::service
-            Git["Git Worker"]:::service
-            Asset["Asset Handler"]:::service
             Search["Search Engine"]:::service
+            Git["Git Worker"]:::service
         end
+        
+        
     end
 
     subgraph Storage ["Storage / Backends"]
         direction LR
+        S3Store[("S3 API Store<br>(Binary assets)")]:::storage
         DB[("PostgreSQL<br>(RBAC, Metadata, Drafts,<br>FTS Fallback)")]:::storage
         GitRepo[("Local/Remote Git<br>(Markdown files)")]:::storage
-        S3Store[("S3 API Store<br>(Binary assets)")]:::storage
         OS[("OpenSearch / ES<br>(Primary Index)")]:::storage
     end
 
-    %% Routing
-    Web -->|HTTPS / JSON| Router
+    %% Client Routing to Router
     MCP -->|HTTP POST / JSON-RPC| Router
+    Web -->|HTTPS / JSON| Router
     API -->|HTTPS REST| Router
 
-    %% Core Services Dispatches
+    %% Router dispatches to Core Services
+    Router --> Asset
     Router --> Auth
     Router --> Page
-    Router --> Asset
     Router --> Search
 
-    %% Storage connections
+    %% Internal service dependencies
+    Page --> Git
+    Page --> Auth
+    Asset --> Git
+    Search --> Auth
+
+    %% Storage connections (pointing directly to respective backends)
+    Asset --> S3Store
+    Asset --> DB
     Auth --> DB
     Page --> DB
-    Page --> Git
     Git --> GitRepo
-    Asset --> DB
-    Asset --> S3Store
     Search --> OS
     Search -.->|FTS Fallback| DB
 ```
@@ -102,18 +110,21 @@ graph TD
 ### Downward Inheritance
 
 Grants flow downwards from parent folders to nested children. The policy engine evaluates all direct and inherited user or group grants and applies the highest resolved permission. Crucially:
-* A nested folder or page cannot lower or restrict permissions inherited from above (ensuring structural predictability).
-* Top-level space creators automatically receive Owner status.
-* Any share mutation that would strip the final Owner from a folder or space is blocked at the database level to prevent orphaned content.
+
+- A nested folder or page cannot lower or restrict permissions inherited from above (ensuring structural predictability).
+- Top-level space creators automatically receive Owner status.
+- Any share mutation that would strip the final Owner from a folder or space is blocked at the database level to prevent orphaned content.
 
 ---
 
 ## Abstracting Git for End Users
 
-My core design principle is: **Git is invisible to users.** End users should edit documents in a standard WYSIWYG/split-markdown editor and view revision histories without ever hearing terms like *index*, *push*, or *merge conflicts*.
+My core design principle is: **Git is invisible to users.** End users should edit documents in a standard WYSIWYG/split-markdown editor and view revision histories without ever hearing terms like _index_, _push_, or _merge conflicts_.
 
 ### Server-Side Commits and Reconciliation
+
 When an authorized user saves a page:
+
 1. The backend writes the document as a clean Markdown file with structured YAML frontmatter containing metadata (title, tags, description) to the local disk.
 2. The `GitService` executes an automated commit on a server-side Git repository using a dedicated git CLI worker.
 3. Once committed, the metadata is cached in PostgreSQL `pages` for fast directory listing and index querying.
@@ -122,13 +133,17 @@ When an authorized user saves a page:
 If the server boots up and detects a remote repository, it pulls the latest Markdown changes and automatically reconciles the PostgreSQL cache with the files in Git, acting as a self-healing pipeline.
 
 ### Translation & Multilingual Paths
+
 LivingKB supports translations natively. In Git, files are stored using a clean, path-sanitized convention:
+
 ```
 {folderPath}/{contentId}.{lang}.md
 ```
+
 For example, a guide in English and Vietnamese would sit side-by-side:
-* `engineering/runbooks/postgres.en.md`
-* `engineering/runbooks/postgres.vi.md`
+
+- `engineering/runbooks/postgres.en.md`
+- `engineering/runbooks/postgres.vi.md`
 
 In the web interface, routing uses the clean concept path `/{lang}/{contentId}` instead of exposing raw file system paths or exposing space slugs unnecessarily, keeping links human-readable and SEO-friendly.
 
@@ -152,6 +167,7 @@ When a user drags a file into the editor, the file size is verified against conf
 To make LivingKB a first-class knowledge hub for AI, I built a native **Model Context Protocol (MCP)** server directly into the Go application. Large Language Models (LLMs) and coding assistants can connect directly to the KB via secure, per-user authenticated MCP sessions.
 
 ### Safe AI Writes via Proposals
+
 While AI agents can read pages they have access to, they are restricted from modifying production content directly. Any write tools like `propose_edit` or `propose_create` generate reviewable **Drafts/Proposals** in PostgreSQL rather than writing directly to Git.
 
 ```mermaid
@@ -181,32 +197,36 @@ A human reviewer accesses a **Draft Review Portal** in the Svelte UI, inspects a
 
 ## Performance & Asset Management
 
-A common mistake with Git-backed wikis is storing binary files (images, PDFs) inside Git. Over time, this bloats the repository size and degrades performance. 
+A common mistake with Git-backed wikis is storing binary files (images, PDFs) inside Git. Over time, this bloats the repository size and degrades performance.
 
 LivingKB resolves this by keeping Git purely textual:
-* **Asset Offloading**: All uploaded binary assets are routed through the `AssetService` to an S3-compatible object store (like AWS S3 or MinIO) using opaque keys.
-* **Stable References**: Inside the Markdown file, assets are stored as stable URI references: `asset://<asset_uuid>`.
-* **Dynamic Resolution**: When rendering Markdown in the frontend, the server parses `asset://` URIs and replaces them with short-lived, presigned S3 URLs (expiring in 15 minutes) after verifying the user's `asset:read` permission.
+
+- **Asset Offloading**: All uploaded binary assets are routed through the `AssetService` to an S3-compatible object store (like AWS S3 or MinIO) using opaque keys.
+- **Stable References**: Inside the Markdown file, assets are stored as stable URI references: `asset://<asset_uuid>`.
+- **Dynamic Resolution**: When rendering Markdown in the frontend, the server parses `asset://` URIs and replaces them with short-lived, presigned S3 URLs (expiring in 15 minutes) after verifying the user's `asset:read` permission.
 
 ---
 
 ## The Frontend: Svelte 5 & Nebula Forge Styling
 
-The user interface is built on **Svelte 5** and styled using vanilla CSS, utilizing CSS custom properties for seamless real-time light/dark theme switching. 
+The user interface is built on **Svelte 5** and styled using vanilla CSS, utilizing CSS custom properties for seamless real-time light/dark theme switching.
 
 ### Svelte 5 Runes
+
 Svelte 5's new reactivity system (`$state`, `$derived`, `$effect`) proved incredibly useful for managing complex client-side state:
-* **Hierarchical Page Tree**: The collapsible sidebar builds a recursive directory structure client-side, derived Reactively from flat list paths using `$derived`.
-* **Real-time Split Preview**: The Markdown editor uses active runes to sync the input text block with a sanitized live preview pane.
-* **Responsive Layouts**: User preference settings (such as sidebar collapse states) are bound to `$state` and saved in `localStorage` dynamically.
+
+- **Hierarchical Page Tree**: The collapsible sidebar builds a recursive directory structure client-side, derived Reactively from flat list paths using `$derived`.
+- **Real-time Split Preview**: The Markdown editor uses active runes to sync the input text block with a sanitized live preview pane.
+- **Responsive Layouts**: User preference settings (such as sidebar collapse states) are bound to `$state` and saved in `localStorage` dynamically.
 
 ---
 
 ## Deployment & DevOps Invariants
 
-LivingKB's production deployment is optimized for zero-overhead self-hosting. 
-* **Scratch-based Multi-Stage Dockerfile**: The final runtime container is built on top of a minimal base image (copying only the compiled Go static binary, musl dependencies, CA certificates, and the `git` binary from an Alpine intermediate stage).
-* **SMTP Outbound Only**: To simplify email setups, I avoided hosting a complex SMTP mail server in the container. LivingKB acts as an outbound SMTP client, storing encrypted credentials at rest and connecting over SSL/STARTTLS to external mail providers (e.g. Resend, SendGrid).
+LivingKB's production deployment is optimized for zero-overhead self-hosting.
+
+- **Scratch-based Multi-Stage Dockerfile**: The final runtime container is built on top of a minimal base image (copying only the compiled Go static binary, musl dependencies, CA certificates, and the `git` binary from an Alpine intermediate stage).
+- **SMTP Outbound Only**: To simplify email setups, I avoided hosting a complex SMTP mail server in the container. LivingKB acts as an outbound SMTP client, storing encrypted credentials at rest and connecting over SSL/STARTTLS to external mail providers (e.g. Resend, SendGrid).
 
 ---
 
@@ -215,21 +235,25 @@ LivingKB's production deployment is optimized for zero-overhead self-hosting.
 Building LivingKB as a solo developer was an intensive study in architecture, security boundaries, and the evolving relationship between human and machine collaboration. Several critical technical lessons emerged from this project:
 
 ### 1. Guarding AI Integration with Human-in-the-Loop Approval
-Karpathy's LLM Wiki concept is exciting because it gives AI models active participation in knowledge curation. However, in practice, giving LLMs direct access to write and push commits to production leads to chaos and hallucination-fueled corruption of data. 
 
-**The Lesson:** AI writes must always be *proposals*, not direct mutations. By intercepting MCP tools at the API boundary and forcing them into a reviewable draft state in PostgreSQL, I successfully harnessed the generative power of AI while preserving a strict, human-in-the-loop verification gate.
+Karpathy's LLM Wiki concept is exciting because it gives AI models active participation in knowledge curation. However, in practice, giving LLMs direct access to write and push commits to production leads to chaos and hallucination-fueled corruption of data.
+
+**The Lesson:** AI writes must always be _proposals_, not direct mutations. By intercepting MCP tools at the API boundary and forcing them into a reviewable draft state in PostgreSQL, I successfully harnessed the generative power of AI while preserving a strict, human-in-the-loop verification gate.
 
 ### 2. Separating Concept ID from Localization
+
 Adopting Google's Open Knowledge Format (OKF) layout taught me the importance of stable concept modeling. Translating wiki pages often leads to complex, fragmented folder trees where permissions diverge (e.g., `en/guides/setup.md` vs `vi/huong-dan/cai-dat.md`).
 
 **The Lesson:** By mapping content to a stable, language-independent Concept ID/Path and storing translations side-by-side (e.g., `guides/setup.en.md` and `guides/setup.vi.md`), I kept the path-based authorization logic completely isolated from the language view. The RBAC engine evaluates the normalized path, making access control simple, clean, and highly maintainable.
 
 ### 3. Git is a Fantastic Database—With Guardrails
-Using server-side Git as a version-controlled content engine provides unmatched transparency. However, Git wasn't built to be a high-concurrency database. 
+
+Using server-side Git as a version-controlled content engine provides unmatched transparency. However, Git wasn't built to be a high-concurrency database.
 
 **The Lesson:** You cannot expose Git directly to public API writes without application-level safety layers. I had to enforce path-traversal sanitation, concurrent execution locks in `GitService`, and a dual-engine architecture where PostgreSQL handles real-time queries (directory listing, permissions, search cache) while Git acts as the durable storage backend.
 
 ### 4. Solo-Developer Stack Synergy: Go + Svelte 5
+
 When developing a system of this scale alone, developer velocity and deployment simplicity are paramount.
 
 **The Lesson:** Keeping the stack lean pays massive dividends. Serving the Svelte 5 TypeScript SPA directly from the Go binary eliminated CORS headaches, simplified the auth cookie/JWT configurations, and reduced deployment to a single `docker run` command. Furthermore, Svelte 5's reactive runes (`$derived` and `$state`) made implementing client-side hierarchical page trees and side-by-side visual diff comparisons fast and painless.
@@ -242,4 +266,4 @@ The key to success was maintaining clear boundaries: Git for durability, Postgre
 
 ---
 
-*LivingKB is open-source. You can explore the Go backend, Svelte 5 SPA, and full architecture on the [GitHub Repository](https://github.com/LivingKB/LivingKB).*
+_LivingKB is open-source. You can explore the Go backend, Svelte 5 SPA, and full architecture on the [GitHub Repository](https://github.com/LivingKB/LivingKB)._

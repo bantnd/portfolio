@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { Image } from "astro:assets";
-import { Github, Globe } from "@lucide/astro";
+import { CodeXml, Globe } from "@lucide/astro";
 import { meta, projects } from "../consts.ts";
 ---
 
@@ -44,7 +44,7 @@ import { meta, projects } from "../consts.ts";
                   target="_blank"
                   class="btn btn-soft light-mode-subtle flex-1"
                 >
-                  <Github />
+                  <CodeXml />
                   Source
                 </a>
               ) : (
@@ -52,7 +52,7 @@ import { meta, projects } from "../consts.ts";
                   class="btn btn-soft btn-disabled light-mode-subtle flex-1"
                   aria-disabled="true"
                 >
-                  <Github />
+                  <CodeXml />
                   Source
                 </span>
               )}
