@@ -19,7 +19,7 @@ import Icon from "./Icon.astro";
 
   <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
     {
-      projects.slice(0, 3).map((proj, index) => (
+      projects.slice(0, 3).map((proj) => (
         <div class="group relative flex flex-col rounded-3xl border border-base-content/10 bg-base-content/[0.03] p-8 shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-accent/30 hover:bg-base-content/[0.07] hover:shadow-accent/5">
           {/* Glassy background glow on hover */}
           <div class="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-br from-accent/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -30,13 +30,15 @@ import Icon from "./Icon.astro";
                 <img
                   src={proj.logoImage}
                   alt={proj.title}
-                  class={`h-full w-full object-contain ${proj.title.includes("Kafka") ? "kafka-logo" : ""}`}
+                  style={{ transform: `scale(${proj.logoScale ?? 1})` }}
+                  class={`h-full w-full object-contain ${proj.invertOnDark ? "icon-invert-on-dark" : ""}`}
                 />
               ) : (
                 <Image
                   src={proj.logoImage}
                   alt={proj.title}
-                  class={`h-full w-full object-contain ${proj.title === "High-Availability Kubernetes Platform" ? "kafka-logo" : ""}`}
+                  style={{ transform: `scale(${proj.logoScale ?? 1})` }}
+                  class={`h-full w-full object-contain ${proj.invertOnDark ? "icon-invert-on-dark" : ""}`}
                 />
               )}
             </div>

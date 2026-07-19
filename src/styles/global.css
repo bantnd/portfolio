@@ -211,17 +211,22 @@
     @apply text-base-content;
   }
 
-  /* Invert Kafka logo in dark mode for better visibility */
-  [data-theme="dark"] .kafka-icon {
-    filter: invert(1) brightness(1.1);
-  }
-
   /* Glassmorphism effect */
   .glass-effect {
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
+}
+
+/* Keep monochrome icons visible across themes. This is intentionally outside
+   Tailwind's layers so filter utilities cannot override it. */
+.icon-invert-on-dark {
+  filter: brightness(0) invert(1);
+}
+
+[data-theme="light"] .icon-invert-on-dark {
+  filter: brightness(1) invert(0);
 }
 
 /* Mermaid Diagram Centering, Responsiveness, and Styling */

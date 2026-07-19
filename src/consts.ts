@@ -17,6 +17,7 @@ import ApisixIcon from "./assets/icons/apisix.svg";
 // import LonghornIcon from "./assets/icons/longhorn.svg";
 // import MaterializeIcon from "./assets/icons/materialize.svg";
 import PowerBIIcon from "./assets/icons/PowerBI.svg";
+import LivingKBIcon from "./assets/icons/LivingKB.svg";
 
 export const meta = {
   about: {
@@ -143,7 +144,7 @@ export const about: About = {
     "Have a project in mind or just want to chat? I'm always open to discussing new ideas and opportunities. Feel free to reach out directly or connect with me on social media.",
   techStack: {
     core: [
-      { name: "Apache Kafka", icon: "https://cdn.simpleicons.org/apachekafka" },
+      { name: "Apache Kafka", icon: "https://cdn.simpleicons.org/apachekafka", invertOnDark: true },
       { name: "Apache Spark", icon: "https://cdn.simpleicons.org/apachespark" },
       { name: "Kubernetes", icon: "https://cdn.simpleicons.org/kubernetes" },
       { name: "Python", icon: "https://cdn.simpleicons.org/python" },
@@ -184,7 +185,18 @@ export const about: About = {
 
 export const projects: Project[] = [
   {
+    logoImage: LivingKBIcon,
+    logoScale: 1.5,
+    title: "LivingKB — Git-Backed Knowledge Base",
+    techs: ["Go", "Svelte", "MCP", "PostgreSQL", "Git"],
+    description:
+      "A self-hosted, Git-backed knowledge base designed for both humans and AI agents. Features a Svelte 5 SPA, Go backend with server-side Git commits, RBAC, multi-language support, and an MCP server for AI collaboration.",
+    sourceHref: "https://github.com/LivingKB/LivingKB",
+    liveHref: "/blog/building-livingkb-git-backed-knowledge-base",
+  },
+  {
     logoImage: "https://cdn.simpleicons.org/apachekafka",
+    invertOnDark: true,
     title: "Real-time Data Synchronization Platform",
     techs: ["Kafka", "Debezium", "Confluent", "Go"],
     description:

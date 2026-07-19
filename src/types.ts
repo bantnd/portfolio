@@ -33,6 +33,7 @@ interface Education {
 interface TechStack {
   name: string;
   icon: string;
+  invertOnDark?: boolean;
 }
 
 interface TechStackCategories {
@@ -55,6 +56,8 @@ export interface About {
 
 export interface Project {
   logoImage: ImageMetadata | string;
+  logoScale?: number;
+  invertOnDark?: boolean;
   title: string;
   techs: string[];
   description: string;
