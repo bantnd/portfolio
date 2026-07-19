@@ -5,7 +5,7 @@ interface Props {
     duration?: number; // Duration in milliseconds before auto-dismiss
 }
 
-const { duration = 2500 } = Astro.props;
+const { duration = 1000 } = Astro.props;
 ---
 
 <!-- Stardust Overlay - SEO-safe: real content loads behind this -->
@@ -203,7 +203,7 @@ const { duration = 2500 } = Astro.props;
     const canvas = document.getElementById(
         "stardust-canvas",
     ) as HTMLCanvasElement;
-    const duration = parseInt(overlay.dataset.duration || "2500");
+    const duration = parseInt(overlay.dataset.duration || "1000");
 
     // Check if user has already seen the intro (using sessionStorage for per-session)
     const hasSeenIntro = sessionStorage.getItem("seenIntro");
