@@ -28,39 +28,7 @@ const iconMap = {
 };
 
 const IconComponent = iconMap[name as keyof typeof iconMap];
-// const brandIconMap = {
-//   Github: githubSvg,
-//   Linkedin: linkedinSvg,
-// };
-// const brandSvg = brandIconMap[name as keyof typeof brandIconMap];
-// const cssSize = typeof size === "number" ? `${size}px` : size;
 ---
 
 {IconComponent && <IconComponent size={size} class={className} />}
-{
-  IconComponent ? (
-    <IconComponent size={size} class={className} />
-  ) : brandSvg ? (
-    <span
-      class:list={["brand-icon", className]}
-      style={`width: ${cssSize}; height: ${cssSize};`}
-      set:html={brandSvg}
-    />
-  ) : null
-}
 
-<style>
-  .brand-icon {
-    display: inline-flex;
-    flex: none;
-  }
-
-  .brand-icon :global(svg) {
-    width: 100%;
-    height: 100%;
-  }
-
-  .brand-icon :global(path) {
-    fill: currentColor;
-  }
-</style>
