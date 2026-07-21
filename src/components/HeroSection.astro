@@ -36,7 +36,7 @@ import Icon from "./Icon.astro";
     <p
       set:html={about.description.replace(
         /\*\*(.*?)\*\*/g,
-        '<strong class="text-white font-semibold">$1</strong>',
+        '<strong class="text-base-content font-semibold">$1</strong>',
       )}
       class="text-muted mt-8 text-lg leading-relaxed"
     />
