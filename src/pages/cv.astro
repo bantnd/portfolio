@@ -6,6 +6,7 @@ import linkedinIcon from "../assets/icons/linkedin.svg";
 const siteUrl = (Astro.site ?? new URL(Astro.url.origin)).toString().replace(/\/$/, "");
 const cvUrl = `${siteUrl}/cv/`;
 const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
+const showPhone = /^(true|on|1)$/i.test(import.meta.env.SHOW_PHONE ?? "");
 ---
 
 <!doctype html>
@@ -96,7 +97,7 @@ const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
                 class="flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white shadow-xl transition-all hover:scale-105 hover:bg-emerald-500"
             >
                 <Printer size="1.25rem" />
-                Print
+                Print PDF
             </button>
         </div>
 
@@ -116,10 +117,12 @@ const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
                 <div
                     class="mt-5 grid grid-cols-2 gap-x-8 gap-y-2.5 text-sm text-slate-600 sm:grid-cols-3"
                 >
-                    <span class="flex items-center gap-1.5">
-                        <Phone size="0.875rem" />
-                        <span>+84 XXX XXX XXX</span>
-                    </span>
+                    {showPhone && (
+                        <span class="flex items-center gap-1.5">
+                            <Phone size="0.875rem" />
+                            <span>+84 XXX XXX XXX</span>
+                        </span>
+                    )}
                     {
                         about.links.map((link) => {
                             if (link.icon === "Mail") {
