@@ -1,6 +1,6 @@
 ---
 import { about, projects, meta } from "../consts";
-import { Mail, MapPin, Globe, Printer } from "lucide-react";
+import { Mail, MapPin, Globe, Phone, Printer } from "lucide-react";
 import linkedinIcon from "../assets/icons/linkedin.svg";
 
 const siteUrl = (Astro.site ?? new URL(Astro.url.origin)).toString().replace(/\/$/, "");
@@ -116,6 +116,10 @@ const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
                 <div
                     class="mt-5 grid grid-cols-2 gap-x-8 gap-y-2.5 text-sm text-slate-600 sm:grid-cols-3"
                 >
+                    <span class="flex items-center gap-1.5">
+                        <Phone size="0.875rem" />
+                        <span>+84 XXX XXX XXX</span>
+                    </span>
                     {
                         about.links.map((link) => {
                             if (link.icon === "Mail") {
@@ -322,7 +326,7 @@ const siteDisplay = siteUrl.replace(/^https?:\/\//, "");
                             <div class="rounded-lg border border-slate-200 p-4 print:border-slate-300">
                                 {project.liveHref ? (
                                     <a
-                                        href={project.liveHref}
+                                        href={new URL(project.liveHref, siteUrl)}
                                         class="mb-1 block font-bold text-slate-900 transition-colors hover:text-emerald-600"
                                     >
                                         {project.title}
